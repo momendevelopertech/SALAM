@@ -15,10 +15,10 @@ export const Route = createFileRoute("/")({
         content:
           "أزياء محتشمة راقية من سلام: عبايات وإسدالات وفساتين بأقمشة مختارة بعناية، مع توصيل لكل محافظات مصر.",
       },
-      { property: "og:title", content: "SALAM | سلام — Premium Modest Fashion" },
+      { property: "og:title", content: "SALAM | سلام — عبايات وإسدالات وفساتين محتشمة" },
       {
         property: "og:description",
-        content: "Abayas, esdals and modest dresses in carefully chosen fabrics.",
+        content: "أزياء محتشمة راقية من سلام: عبايات وإسدالات وفساتين بأقمشة مختارة بعناية، مع توصيل لكل محافظات مصر.",
       },
     ],
   }),

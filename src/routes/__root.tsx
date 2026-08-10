@@ -81,15 +81,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "SALAM | سلام — Premium Modest Fashion" },
+      { title: "SALAM | سلام — عبايات وإسدالات وفساتين محتشمة" },
       {
         name: "description",
         content:
-          "Abayas, esdals and modest dresses in carefully chosen fabrics. Delivered across Egypt.",
+          "أزياء محتشمة راقية من سلام: عبايات وإسدالات وفساتين بأقمشة مختارة بعناية، مع توصيل لكل محافظات مصر.",
       },
       { property: "og:site_name", content: "SALAM" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:title", content: "SALAM | سلام — عبايات وإسدالات وفساتين محتشمة" },
+      { name: "twitter:title", content: "SALAM | سلام — عبايات وإسدالات وفساتين محتشمة" },
+      { property: "og:description", content: "أزياء محتشمة راقية من سلام: عبايات وإسدالات وفساتين بأقمشة مختارة بعناية، مع توصيل لكل محافظات مصر." },
+      { name: "twitter:description", content: "أزياء محتشمة راقية من سلام: عبايات وإسدالات وفساتين بأقمشة مختارة بعناية، مع توصيل لكل محافظات مصر." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/4eac6b64ded41006586b4705dffb1990/id-preview-cb2a40e5--388bcdca-4732-4d64-b864-713ef2d8ded2.lovable.app-1786355800929.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/4eac6b64ded41006586b4705dffb1990/id-preview-cb2a40e5--388bcdca-4732-4d64-b864-713ef2d8ded2.lovable.app-1786355800929.png" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
