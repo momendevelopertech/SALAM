@@ -81,6 +81,30 @@ type Product = {
 
 type Taxonomy = { id: string; name_ar: string; name_en: string };
 
+type ProductPayload = {
+  id?: string;
+  slug: string;
+  sku: string | null;
+  name_ar: string;
+  name_en: string;
+  description_ar: string | null;
+  description_en: string | null;
+  category_id: string | null;
+  collection_id: string | null;
+  occasion_id: string | null;
+  cost_price: number;
+  price: number;
+  sale_price: number | null;
+  main_image: string | null;
+  fabric_ar: string | null;
+  fabric_en: string | null;
+  fulfillment: "in_stock" | "made_to_order";
+  is_new: boolean;
+  is_best_seller: boolean;
+  is_limited: boolean;
+  is_active: boolean;
+};
+
 const NONE = "__none__";
 
 function emptyForm() {
