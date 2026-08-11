@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/table";
 
 export const Route = createFileRoute("/_authenticated/admin/catalog")({
-  component: AdminCatalog;
+  component: AdminCatalog,
 });
 
 type TaxTable = "categories" | "collections" | "occasions";
