@@ -293,16 +293,14 @@ export const updateOrder = createServerFn({ method: "POST" })
     if (!current) throw new Error("Order not found");
     const from = (current as { status: string }).status;
 
-    const patch: {
-      status?: typeof data.status;
-      payment_status?: typeof data.paymentStatus;
-      tracking_number?: string | null;
-      admin_notes?: string | null;
-    } = {};
-    if (data.status) patch.status = data.status;
-    if (data.paymentStatus) patch.payment_status = data.paymentStatus;
-    if (data.trackingNumber !== undefined) patch.tracking_number = data.trackingNumber || null;
-    if (data.adminNotes !== undefined) patch.admin_notes = data.adminNotes || null;
+    const patch = {
+      ...(data.status ? { status: data.status } : {}),
+      ...(data.paymentStatus ? { payment_status: data.paymentStatus } : {}),
+      ...(data.trackingNumber !== undefined
+        ? { tracking_number: data.trackingNumber || null }
+        : {}),
+      ...(data.adminNotes !== undefined ? { admin_notes: data.adminNotes || null } : {}),
+    };
 
     const { error } = await context.supabase.from("orders").update(patch).eq("id", data.id);
     if (error) throw new Error(error.message);
