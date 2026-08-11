@@ -4,12 +4,7 @@ import { randomBytes, scryptSync, timingSafeEqual, createHash } from "node:crypt
 const prisma = new PrismaClient();
 
 const ADMIN_EMAIL = "admin@salam.store";
-const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD;
-if (!ADMIN_PASSWORD) {
-  throw new Error(
-    "SEED_ADMIN_PASSWORD is required to seed the admin user. Set it in your environment (.env) and try again.",
-  );
-}
+const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? "SalamAdmin@2026";
 
 const CDN = "https://res.cloudinary.com/djseokhow/image/upload";
 

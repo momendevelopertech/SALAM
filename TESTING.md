@@ -50,7 +50,7 @@ npm run lint         # فحص الكود
 
 | النوع | القيمة |
 |---|---|
-| أدمن | `admin@salam.store` — كلمة المرور من متغير `SEED_ADMIN_PASSWORD` |
+| أدمن | `admin@salam.store` / `SalamAdmin@2026` |
 | كوبون 10% | `WELCOME10` |
 | كوبون 50% | `SALAM50` |
 | المنتجات | 12 منتجاً (5 عبايات، 4 فساتين، 3 إسدالات) بمقاسات M/L/XL |
@@ -114,7 +114,7 @@ curl.exe -c %JAR% "http://localhost:8080/_serverFn/<LOGIN_ID>" -X POST ^
   -H "x-tsr-serverFn: true" -H "Referer: http://localhost:8080/" ^
   -H "Accept: application/x-tss-framed, application/x-ndjson, application/json" ^
   -H "Content-Type: application/json" ^
-  --data-binary "{""data"":{""email"":""admin@salam.store"",""password"":""<PASSWORD_FROM_SEED_ADMIN_PASSWORD>""},""context"":{}}"
+  --data-binary "{""data"":{""email"":""admin@salam.store"",""password"":""SalamAdmin@2026""},""context"":{}}"
 
 # 2) التحقق من الجلسة (بالكوكي)
 curl.exe -b %JAR% "http://localhost:8080/_serverFn/<GETME_ID>" ^

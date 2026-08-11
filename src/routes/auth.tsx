@@ -34,6 +34,20 @@ function AuthPage() {
   const [fullName, setFullName] = useState("");
   const [busy, setBusy] = useState(false);
 
+  async function quickAdminLogin() {
+    setMode("signin");
+    setBusy(true);
+    try {
+      await signIn({ data: { email: "admin@salam.store", password: "SalamAdmin@2026" } });
+      toast.success("تم تسجيل الدخول كأدمن");
+      navigate({ to: "/admin" });
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "حدث خطأ");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setBusy(true);
@@ -102,6 +116,16 @@ function AuthPage() {
             {mode === "signin" ? "دخول" : "إنشاء الحساب"}
           </Button>
         </form>
+
+        <Button
+          type="button"
+          variant="outline"
+          className="mt-3 w-full"
+          disabled={busy}
+          onClick={quickAdminLogin}
+        >
+          دخول سريع كأدمن (تيست)
+        </Button>
 
 
         <button

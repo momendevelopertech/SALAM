@@ -129,8 +129,7 @@ console.log("\n== 1. Unauthorized guard (requireAdmin) ==");
 console.log("\n== 2. Login as admin ==");
 let adminMe;
 {
-  const adminPassword = env.SEED_ADMIN_PASSWORD;
-  if (!adminPassword) throw new Error("Set SEED_ADMIN_PASSWORD in .env to run login tests");
+  const adminPassword = env.SEED_ADMIN_PASSWORD ?? "SalamAdmin@2026";
   const r = await call(login, { data: { email: "admin@salam.store", password: adminPassword } });
   report("login returns ok", r.status === 200 && r.parsed && r.parsed.role === "admin", JSON.stringify(r.parsed ?? r));
   report("session cookie set", !!cookieJar.cookie, cookieJar.cookie ? cookieJar.cookie.split(";")[0] : "none");
