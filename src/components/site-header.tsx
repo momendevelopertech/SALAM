@@ -56,6 +56,12 @@ export function SiteHeader() {
               </span>
             )}
           </Link>
+          <Link
+            to="/admin"
+            className="hidden text-sm text-foreground/60 transition-colors hover:text-primary sm:block"
+          >
+            {locale === "ar" ? "الإدارة" : "Admin"}
+          </Link>
         </div>
       </div>
       <nav className="container-salam flex items-center gap-5 overflow-x-auto pb-2 md:hidden">
