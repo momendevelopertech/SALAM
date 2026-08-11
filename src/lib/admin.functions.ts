@@ -122,11 +122,26 @@ export const saveProduct = createServerFn({ method: "POST" })
     await assertAdmin(context.supabase, context.userId);
     const { id, ...fields } = data;
     const payload = {
-      ...fields,
+      slug: fields.slug,
+      sku: fields.sku ?? null,
+      name_ar: fields.name_ar,
+      name_en: fields.name_en,
+      description_ar: fields.description_ar ?? null,
+      description_en: fields.description_en ?? null,
       category_id: fields.category_id ?? null,
       collection_id: fields.collection_id ?? null,
       occasion_id: fields.occasion_id ?? null,
+      cost_price: fields.cost_price,
+      price: fields.price,
       sale_price: fields.sale_price ?? null,
+      main_image: fields.main_image ?? null,
+      fabric_ar: fields.fabric_ar ?? null,
+      fabric_en: fields.fabric_en ?? null,
+      fulfillment: fields.fulfillment,
+      is_new: fields.is_new,
+      is_best_seller: fields.is_best_seller,
+      is_limited: fields.is_limited,
+      is_active: fields.is_active,
     };
     const query = id
       ? context.supabase.from("products").update(payload).eq("id", id)
