@@ -130,7 +130,7 @@ function AdminProducts() {
   };
 
   const saveMutation = useMutation({
-    mutationFn: (payload: Parameters<typeof save>[0]["data"]) => save({ data: payload }),
+    mutationFn: (payload: ProductPayload) => save({ data: payload }),
     onSuccess: () => {
       toast.success("تم حفظ المنتج");
       setOpen(false);
