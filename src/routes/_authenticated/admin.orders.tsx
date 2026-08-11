@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { toast } from "sonner";
 import { getAdminOrders, updateOrder } from "@/lib/admin.functions";
 import { formatDate, formatPrice } from "@/lib/format";
@@ -171,8 +171,8 @@ function AdminOrders() {
             </TableHeader>
             <TableBody>
               {visible.map((o) => (
-                <>
-                  <TableRow key={o.id}>
+                <Fragment key={o.id}>
+                  <TableRow>
                     <TableCell dir="ltr" className="font-medium">
                       {o.order_number}
                     </TableCell>
@@ -226,7 +226,7 @@ function AdminOrders() {
                     </TableCell>
                   </TableRow>
                   {expanded === o.id && (
-                    <TableRow key={`${o.id}-details`}>
+                    <TableRow>
                       <TableCell colSpan={7} className="bg-muted/40">
                         <OrderDetails
                           order={o}
@@ -236,7 +236,7 @@ function AdminOrders() {
                       </TableCell>
                     </TableRow>
                   )}
-                </>
+                </Fragment>
               ))}
             </TableBody>
           </Table>
