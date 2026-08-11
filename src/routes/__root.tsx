@@ -143,6 +143,7 @@ function RootComponent() {
             </main>
             <SiteFooter />
           </div>
+          <Toaster />
         </CartProvider>
       </I18nProvider>
     </QueryClientProvider>
