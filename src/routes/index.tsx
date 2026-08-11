@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { getCatalog } from "@/lib/catalog.functions";
 import { useI18n } from "@/lib/i18n";
-import { formatPrice } from "@/lib/format";
+import { ProductCard, type ProductCardData } from "@/components/product-card";
 
 const catalogQuery = queryOptions({ queryKey: ["catalog"], queryFn: () => getCatalog() });
 
@@ -18,7 +18,8 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "SALAM | سلام — عبايات وإسدالات وفساتين محتشمة" },
       {
         property: "og:description",
-        content: "أزياء محتشمة راقية من سلام: عبايات وإسدالات وفساتين بأقمشة مختارة بعناية، مع توصيل لكل محافظات مصر.",
+        content:
+          "أزياء محتشمة راقية من سلام: عبايات وإسدالات وفساتين بأقمشة مختارة بعناية، مع توصيل لكل محافظات مصر.",
       },
     ],
   }),
@@ -28,19 +29,13 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-type Product = {
-  slug: string;
-  name_ar: string;
-  name_en: string;
-  price: number;
-  sale_price: number | null;
-  main_image: string | null;
+type Product = ProductCardData & {
   is_new: boolean;
   is_best_seller: boolean;
 };
 
 function Home() {
-  const { t, pick, locale } = useI18n();
+  const { t, pick } = useI18n();
   const { data } = useSuspenseQuery(catalogQuery);
   const products = data.products as unknown as Product[];
   const newArrivals = products.filter((p) => p.is_new).slice(0, 4);
@@ -50,14 +45,14 @@ function Home() {
     <div>
       <section className="relative isolate overflow-hidden bg-surface-muted">
         <img
-          src="/__l5e/assets-v1/b8f66b83-447b-4ac5-b15f-ba5b9bc70546/hero.jpg"
-          alt={pick("عباءة سوداء أنيقة على خلفية هادئة", "Elegant black abaya on a calm backdrop")}
-          className="absolute inset-0 h-full w-full object-cover opacity-90"
+          src="https://res.cloudinary.com/djseokhow/image/upload/v1786443226/salam/hero.jpg"
+          alt="SALAM"
+          className="absolute inset-0 h-full w-full object-cover"
           width={1600}
           height={1000}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent" />
-        <div className="container-salam relative flex min-h-[78vh] items-end pb-20 pt-32">
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+        <div className="container-salam relative flex min-h-[72vh] items-center">
           <div className="max-w-xl">
             <div className="eyebrow">{t("home.heroEyebrow")}</div>
             <h1 className="mt-4 whitespace-pre-line font-display text-5xl leading-[1.1] text-foreground md:text-6xl">
@@ -79,37 +74,42 @@ function Home() {
       <section className="container-salam py-20">
         <SectionTitle title={t("home.categories")} />
         <div className="mt-8 grid gap-5 md:grid-cols-3">
-          {(data.categories as { slug: string; name_ar: string; name_en: string; image_url: string | null }[]).map(
-            (c) => (
-              <Link
-                key={c.slug}
-                to="/shop"
-                search={{ category: c.slug }}
-                className="group relative overflow-hidden rounded-sm bg-surface-muted"
-              >
-                {c.image_url && (
-                  <img
-                    src={c.image_url}
-                    alt={pick(c.name_ar, c.name_en)}
-                    loading="lazy"
-                    className="h-[420px] w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-                    width={900}
-                    height={1200}
-                  />
-                )}
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/70 to-transparent p-6">
-                  <span className="font-display text-2xl text-background">
-                    {pick(c.name_ar, c.name_en)}
-                  </span>
-                </div>
-              </Link>
-            ),
-          )}
+          {(
+            data.categories as {
+              slug: string;
+              name_ar: string;
+              name_en: string;
+              image_url: string | null;
+            }[]
+          ).map((c) => (
+            <Link
+              key={c.slug}
+              to="/shop"
+              search={{ category: c.slug }}
+              className="group relative overflow-hidden rounded-sm bg-surface-muted"
+            >
+              {c.image_url && (
+                <img
+                  src={c.image_url}
+                  alt={pick(c.name_ar, c.name_en)}
+                  loading="lazy"
+                  className="h-[420px] w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                  width={900}
+                  height={1200}
+                />
+              )}
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-foreground/70 to-transparent p-6">
+                <span className="font-display text-2xl text-background">
+                  {pick(c.name_ar, c.name_en)}
+                </span>
+              </div>
+            </Link>
+          ))}
         </div>
       </section>
 
-      <ProductRow title={t("home.newArrivals")} items={newArrivals} locale={locale} pick={pick} />
-      <ProductRow title={t("home.bestSellers")} items={bestSellers} locale={locale} pick={pick} />
+      <ProductRow title={t("home.newArrivals")} items={newArrivals} />
+      <ProductRow title={t("home.bestSellers")} items={bestSellers} />
 
       <section className="container-salam py-20">
         <div className="mx-auto max-w-2xl text-center">
@@ -137,39 +137,14 @@ function SectionTitle({ title }: { title: string }) {
   );
 }
 
-function ProductRow({
-  title,
-  items,
-  locale,
-  pick,
-}: {
-  title: string;
-  items: Product[];
-  locale: "ar" | "en";
-  pick: (ar?: string | null, en?: string | null) => string;
-}) {
+function ProductRow({ title, items }: { title: string; items: Product[] }) {
   if (items.length === 0) return null;
   return (
     <section className="container-salam pb-20">
       <SectionTitle title={title} />
-      <div className="mt-8 grid grid-cols-2 gap-5 lg:grid-cols-4">
+      <div className="mt-8 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
         {items.map((p) => (
-          <Link key={p.slug} to="/shop" className="group block">
-            {p.main_image && (
-              <img
-                src={p.main_image}
-                alt={pick(p.name_ar, p.name_en)}
-                loading="lazy"
-                className="aspect-[3/4] w-full rounded-sm object-cover transition-opacity group-hover:opacity-90"
-                width={900}
-                height={1200}
-              />
-            )}
-            <div className="mt-3 text-sm">{pick(p.name_ar, p.name_en)}</div>
-            <div className="mt-1 text-sm text-primary">
-              {formatPrice(p.sale_price ?? p.price, locale)}
-            </div>
-          </Link>
+          <ProductCard key={p.slug} product={p} />
         ))}
       </div>
     </section>

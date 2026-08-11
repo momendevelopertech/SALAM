@@ -1,0 +1,331 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ---------- Enums ----------
+
+enum app_role {
+  admin
+  customer
+}
+
+enum fulfillment_type {
+  in_stock
+  made_to_order
+}
+
+enum order_status {
+  pending
+  confirmed
+  preparing
+  ready_for_shipping
+  shipped
+  out_for_delivery
+  delivered
+  cancelled
+}
+
+enum payment_method {
+  cod
+  instapay
+  vodafone_cash
+}
+
+enum payment_status {
+  pending
+  awaiting_verification
+  paid
+  failed
+  refunded
+}
+
+enum coupon_type {
+  percentage
+  fixed
+}
+
+// ---------- Auth ----------
+
+model users {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  password_hash String
+  full_name     String?
+  phone         String?
+  role          app_role @default(customer)
+  is_active     Boolean  @default(true)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+
+  sessions        sessions[]
+  orders          orders[]
+  reviews         reviews[]
+  wishlist_items  wishlist_items[]
+}
+
+model sessions {
+  id         String   @id @default(uuid())
+  user_id    String
+  token_hash String   @unique
+  expires_at DateTime
+  created_at DateTime @default(now())
+
+  users users @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@index([user_id])
+}
+
+// ---------- Catalog ----------
+
+model categories {
+  id             String    @id @default(uuid())
+  slug           String    @unique
+  name_ar        String
+  name_en        String
+  description_ar String?
+  description_en String?
+  image_url      String?
+  is_active      Boolean   @default(true)
+  sort_order     Int       @default(0)
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  products products[]
+}
+
+model collections {
+  id             String    @id @default(uuid())
+  slug           String    @unique
+  name_ar        String
+  name_en        String
+  description_ar String?
+  description_en String?
+  image_url      String?
+  is_active      Boolean   @default(true)
+  sort_order     Int       @default(0)
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  products products[]
+}
+
+model occasions {
+  id             String    @id @default(uuid())
+  slug           String    @unique
+  name_ar        String
+  name_en        String
+  description_ar String?
+  description_en String?
+  image_url      String?
+  is_active      Boolean   @default(true)
+  sort_order     Int       @default(0)
+  created_at     DateTime  @default(now())
+  updated_at     DateTime  @updatedAt
+
+  products products[]
+}
+
+model products {
+  id               String           @id @default(uuid())
+  slug             String           @unique
+  sku              String?
+  name_ar          String
+  name_en          String
+  description_ar   String?
+  description_en   String?
+  category_id      String?
+  collection_id    String?
+  occasion_id      String?
+  cost_price       Float            @default(0)
+  price            Float
+  sale_price       Float?
+  main_image       String?
+  gallery          Json             @default("[]")
+  video_url        String?
+  fabric_ar        String?
+  fabric_en        String?
+  fit_ar           String?
+  fit_en           String?
+  length_ar        String?
+  length_en        String?
+  care_ar          String?
+  care_en          String?
+  tags             String[]         @default([])
+  seo_title        String?
+  meta_description String?
+  og_image         String?
+  fulfillment      fulfillment_type @default(in_stock)
+  is_new           Boolean          @default(false)
+  is_best_seller   Boolean          @default(false)
+  is_limited       Boolean          @default(false)
+  is_active        Boolean          @default(true)
+  units_sold       Int              @default(0)
+  created_at       DateTime         @default(now())
+  updated_at       DateTime         @updatedAt
+
+  categories       categories?       @relation(fields: [category_id], references: [id], onDelete: SetNull)
+  collections      collections?      @relation(fields: [collection_id], references: [id], onDelete: SetNull)
+  occasions        occasions?        @relation(fields: [occasion_id], references: [id], onDelete: SetNull)
+  product_variants product_variants[]
+  order_items      order_items[]
+  reviews          reviews[]
+  wishlist_items   wishlist_items[]
+
+  @@index([category_id])
+  @@index([collection_id])
+  @@index([occasion_id])
+}
+
+model product_variants {
+  id              String   @id @default(uuid())
+  product_id      String
+  color_ar        String
+  color_en        String
+  color_hex       String   @default("#000000")
+  size            String
+  sku             String?
+  price           Float?
+  image_url       String?
+  stock_available Int      @default(0)
+  stock_reserved  Int      @default(0)
+  stock_sold      Int      @default(0)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  products          products           @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  order_items       order_items[]
+  inventory_history inventory_history[]
+
+  @@unique([product_id, color_en, size])
+}
+
+model shipping_rates {
+  id             String  @id @default(uuid())
+  governorate_ar String
+  governorate_en String  @unique
+  fee            Float
+  days_min       Int     @default(2)
+  days_max       Int     @default(5)
+  is_active      Boolean @default(true)
+}
+
+model coupons {
+  id          String      @id @default(uuid())
+  code        String      @unique
+  type        coupon_type @default(percentage)
+  value       Float
+  min_total   Float       @default(0)
+  expires_at  DateTime?
+  usage_limit Int?
+  used_count  Int         @default(0)
+  is_active   Boolean     @default(true)
+  created_at  DateTime    @default(now())
+}
+
+// ---------- Orders ----------
+
+model orders {
+  id                 String         @id @default(uuid())
+  order_number       String         @unique
+  user_id            String?
+  customer_name      String
+  phone              String
+  email              String?
+  governorate        String
+  city               String
+  address            String
+  notes              String?
+  subtotal           Float
+  discount           Float          @default(0)
+  shipping_fee       Float          @default(0)
+  total              Float
+  coupon_code        String?
+  status             order_status   @default(pending)
+  payment_method     payment_method
+  payment_status     payment_status @default(pending)
+  payment_reference  String?
+  payment_proof_url  String?
+  tracking_number    String?
+  admin_notes        String?
+  created_at         DateTime       @default(now())
+  updated_at         DateTime       @updatedAt
+
+  users       users?       @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  order_items order_items[]
+
+  @@index([phone])
+  @@index([status])
+  @@index([payment_status])
+}
+
+model order_items {
+  id         String   @id @default(uuid())
+  order_id   String
+  product_id String?
+  variant_id String?
+  name_ar    String
+  name_en    String
+  color_ar   String?
+  color_en   String?
+  size       String?
+  image_url  String?
+  unit_price Float
+  cost_price Float    @default(0)
+  quantity   Int
+  line_total Float
+
+  orders           orders           @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  products         products?        @relation(fields: [product_id], references: [id], onDelete: SetNull)
+  product_variants product_variants? @relation(fields: [variant_id], references: [id], onDelete: SetNull)
+
+  @@index([order_id])
+}
+
+model wishlist_items {
+  id         String   @id @default(uuid())
+  user_id    String
+  product_id String
+  created_at DateTime @default(now())
+
+  users    users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  products products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, product_id])
+}
+
+model reviews {
+  id          String   @id @default(uuid())
+  product_id  String
+  user_id     String?
+  author_name String
+  rating      Int
+  comment     String?
+  is_approved Boolean  @default(false)
+  created_at  DateTime @default(now())
+
+  products products @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  users    users?   @relation(fields: [user_id], references: [id], onDelete: SetNull)
+
+  @@index([product_id])
+  @@index([is_approved])
+}
+
+model inventory_history {
+  id          String   @id @default(uuid())
+  variant_id  String?
+  order_id    String?
+  change_type String
+  quantity    Int
+  note        String?
+  created_at  DateTime @default(now())
+
+  product_variants product_variants? @relation(fields: [variant_id], references: [id], onDelete: Cascade)
+
+  @@index([variant_id])
+}

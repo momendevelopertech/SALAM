@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { LayoutDashboard, Package, Tags, ShoppingBag, LogOut } from "lucide-react";
 import { getAdminMe } from "@/lib/admin.functions";
-import { supabase } from "@/integrations/supabase/client";
+import { logout } from "@/lib/auth.functions";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +31,7 @@ const nav = [
 
 function AdminLayout() {
   const me = useServerFn(getAdminMe);
+  const signOutFn = useServerFn(logout);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -43,7 +44,7 @@ function AdminLayout() {
   async function signOut() {
     await queryClient.cancelQueries();
     queryClient.clear();
-    await supabase.auth.signOut();
+    await signOutFn();
     navigate({ to: "/auth", replace: true });
   }
 

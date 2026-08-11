@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireAdmin } from "@/lib/auth.middleware";
 import { z } from "zod";
 
 const uuid = z.string().uuid();
@@ -41,85 +41,114 @@ const taxonomySchema = z.object({
   is_active: z.boolean(),
 });
 
+type TaxonomyTable = "categories" | "collections" | "occasions";
+
+type TaxonomyClient = {
+  findMany: (args: { orderBy: { sort_order: "asc" | "desc" } }) => Promise<unknown[]>;
+  update: (args: { where: { id: string }; data: TaxonomyPayload }) => Promise<unknown>;
+  upsert: (args: {
+    where: { slug: string };
+    update: TaxonomyPayload;
+    create: { slug: string } & TaxonomyPayload;
+  }) => Promise<unknown>;
+  delete: (args: { where: { id: string } }) => Promise<unknown>;
+};
+
+type TaxonomyPayload = {
+  name_ar: string;
+  name_en: string;
+  description_ar: string | null;
+  description_en: string | null;
+  image_url: string | null;
+  sort_order: number;
+  is_active: boolean;
+};
+
+function taxonomyDelegate(prisma: Awaited<typeof import("@/lib/db")>["prisma"], table: TaxonomyTable) {
+  switch (table) {
+    case "categories":
+      return prisma.categories as unknown as TaxonomyClient;
+    case "collections":
+      return prisma.collections as unknown as TaxonomyClient;
+    case "occasions":
+      return prisma.occasions as unknown as TaxonomyClient;
+  }
+}
+
 export const getAdminMe = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
+  .middleware([requireAdmin])
   .handler(async ({ context }) => {
-    const { data } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
-      _role: "admin",
-    });
-    return { userId: context.userId, isAdmin: Boolean(data) };
+    return { userId: context.userId, isAdmin: true };
   });
 
 export const getAdminOverview = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { assertAdmin } = await import("./admin.server");
-    await assertAdmin(context.supabase, context.userId);
-    const db = context.supabase;
+  .middleware([requireAdmin])
+  .handler(async () => {
+    const { prisma } = await import("@/lib/db");
 
-    const [orders, products, variants] = await Promise.all([
-      db.from("orders").select("total, status, payment_status, created_at"),
-      db.from("products").select("id, is_active"),
-      db.from("product_variants").select("stock_available, stock_reserved, stock_sold"),
+    const [orders, productCount, activeProducts, variants, byStatus] = await Promise.all([
+      prisma.orders.findMany({
+        select: { total: true, status: true, payment_status: true, created_at: true },
+      }),
+      prisma.products.count(),
+      prisma.products.count({ where: { is_active: true } }),
+      prisma.product_variants.findMany({ select: { stock_available: true } }),
+      prisma.orders.groupBy({ by: ["status"], _count: { status: true } }),
     ]);
 
-    const orderRows = (orders.data ?? []) as {
-      total: number;
-      status: string;
-      payment_status: string;
-      created_at: string;
-    }[];
-    const revenue = orderRows
+    const revenue = orders
       .filter((o) => o.status !== "cancelled")
-      .reduce((s, o) => s + Number(o.total), 0);
-    const byStatus: Record<string, number> = {};
-    for (const o of orderRows) byStatus[o.status] = (byStatus[o.status] ?? 0) + 1;
+      .reduce((s, o) => s + o.total, 0);
+    const byStatusMap: Record<string, number> = {};
+    for (const b of byStatus) byStatusMap[b.status] = b._count.status;
 
-    const variantRows = (variants.data ?? []) as { stock_available: number }[];
+    const variantRows = variants as { stock_available: number }[];
 
     return {
       revenue,
-      orderCount: orderRows.length,
-      pendingPayments: orderRows.filter((o) => o.payment_status === "awaiting_verification").length,
-      productCount: (products.data ?? []).length,
-      activeProducts: ((products.data ?? []) as { is_active: boolean }[]).filter((p) => p.is_active)
-        .length,
+      orderCount: orders.length,
+      pendingPayments: orders.filter((o) => o.payment_status === "awaiting_verification").length,
+      productCount,
+      activeProducts,
       lowStock: variantRows.filter((v) => v.stock_available > 0 && v.stock_available <= 2).length,
       outOfStock: variantRows.filter((v) => v.stock_available === 0).length,
-      byStatus,
+      byStatus: byStatusMap,
     };
   });
 
 export const getAdminProducts = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { assertAdmin, ADMIN_PRODUCT_SELECT } = await import("./admin.server");
-    await assertAdmin(context.supabase, context.userId);
+  .middleware([requireAdmin])
+  .handler(async () => {
+    const { prisma } = await import("@/lib/db");
+    const { adminProductInclude } = await import("./admin.server");
+
     const [products, categories, collections, occasions] = await Promise.all([
-      context.supabase
-        .from("products")
-        .select(ADMIN_PRODUCT_SELECT)
-        .order("created_at", { ascending: false }),
-      context.supabase.from("categories").select("id, name_ar, name_en").order("sort_order"),
-      context.supabase.from("collections").select("id, name_ar, name_en").order("sort_order"),
-      context.supabase.from("occasions").select("id, name_ar, name_en").order("sort_order"),
+      prisma.products.findMany({
+        include: adminProductInclude,
+        orderBy: { created_at: "desc" },
+      }),
+      prisma.categories.findMany({
+        select: { id: true, name_ar: true, name_en: true },
+        orderBy: { sort_order: "asc" },
+      }),
+      prisma.collections.findMany({
+        select: { id: true, name_ar: true, name_en: true },
+        orderBy: { sort_order: "asc" },
+      }),
+      prisma.occasions.findMany({
+        select: { id: true, name_ar: true, name_en: true },
+        orderBy: { sort_order: "asc" },
+      }),
     ]);
-    if (products.error) throw new Error(products.error.message);
-    return {
-      products: products.data ?? [],
-      categories: categories.data ?? [],
-      collections: collections.data ?? [],
-      occasions: occasions.data ?? [],
-    };
+
+    return { products, categories, collections, occasions };
   });
 
 export const saveProduct = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => productSchema.parse(input))
-  .handler(async ({ data, context }) => {
-    const { assertAdmin } = await import("./admin.server");
-    await assertAdmin(context.supabase, context.userId);
+  .middleware([requireAdmin])
+  .validator((input: unknown) => productSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { prisma } = await import("@/lib/db");
     const { id, ...fields } = data;
     const payload = {
       slug: fields.slug,
@@ -143,120 +172,118 @@ export const saveProduct = createServerFn({ method: "POST" })
       is_limited: fields.is_limited,
       is_active: fields.is_active,
     };
-    const query = id
-      ? context.supabase.from("products").update(payload).eq("id", id)
-      : context.supabase.from("products").insert(payload);
-    const { error } = await query;
-    if (error) throw new Error(error.message);
+
+    if (id) {
+      await prisma.products.update({ where: { id }, data: payload });
+    } else {
+      await prisma.products.upsert({ where: { slug: payload.slug }, update: payload, create: payload });
+    }
     return { ok: true };
   });
 
 export const setProductActive = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ id: uuid, isActive: z.boolean() }).parse(input))
-  .handler(async ({ data, context }) => {
-    const { assertAdmin } = await import("./admin.server");
-    await assertAdmin(context.supabase, context.userId);
-    const { error } = await context.supabase
-      .from("products")
-      .update({ is_active: data.isActive })
-      .eq("id", data.id);
-    if (error) throw new Error(error.message);
+  .middleware([requireAdmin])
+  .validator((input: unknown) => z.object({ id: uuid, isActive: z.boolean() }).parse(input))
+  .handler(async ({ data }) => {
+    const { prisma } = await import("@/lib/db");
+    await prisma.products.update({
+      where: { id: data.id },
+      data: { is_active: data.isActive },
+    });
     return { ok: true };
   });
 
 export const setVariantStock = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .middleware([requireAdmin])
+  .validator((input: unknown) =>
     z.object({ variantId: uuid, stockAvailable: z.number().int().min(0).max(9999) }).parse(input),
   )
-  .handler(async ({ data, context }) => {
-    const { assertAdmin } = await import("./admin.server");
-    await assertAdmin(context.supabase, context.userId);
-    const { error } = await context.supabase
-      .from("product_variants")
-      .update({ stock_available: data.stockAvailable })
-      .eq("id", data.variantId);
-    if (error) throw new Error(error.message);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("inventory_history").insert({
-      variant_id: data.variantId,
-      change_type: "adjust",
-      quantity: data.stockAvailable,
-      note: "Admin stock adjustment",
+  .handler(async ({ data }) => {
+    const { prisma } = await import("@/lib/db");
+    await prisma.product_variants.update({
+      where: { id: data.variantId },
+      data: { stock_available: data.stockAvailable },
+    });
+    await prisma.inventory_history.create({
+      data: {
+        variant_id: data.variantId,
+        change_type: "adjust",
+        quantity: data.stockAvailable,
+        note: "Admin stock adjustment",
+      },
     });
     return { ok: true };
   });
 
 export const getAdminTaxonomies = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { assertAdmin } = await import("./admin.server");
-    await assertAdmin(context.supabase, context.userId);
+  .middleware([requireAdmin])
+  .handler(async () => {
+    const { prisma } = await import("@/lib/db");
     const [categories, collections, occasions] = await Promise.all([
-      context.supabase.from("categories").select("*").order("sort_order"),
-      context.supabase.from("collections").select("*").order("sort_order"),
-      context.supabase.from("occasions").select("*").order("sort_order"),
+      prisma.categories.findMany({ orderBy: { sort_order: "asc" } }),
+      prisma.collections.findMany({ orderBy: { sort_order: "asc" } }),
+      prisma.occasions.findMany({ orderBy: { sort_order: "asc" } }),
     ]);
-    return {
-      categories: categories.data ?? [],
-      collections: collections.data ?? [],
-      occasions: occasions.data ?? [],
-    };
+    return { categories, collections, occasions };
   });
 
 export const saveTaxonomy = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => taxonomySchema.parse(input))
-  .handler(async ({ data, context }) => {
-    const { assertAdmin } = await import("./admin.server");
-    await assertAdmin(context.supabase, context.userId);
+  .middleware([requireAdmin])
+  .validator((input: unknown) => taxonomySchema.parse(input))
+  .handler(async ({ data }) => {
+    const { prisma } = await import("@/lib/db");
     const { id, table, ...fields } = data;
     const payload = {
-      ...fields,
+      name_ar: fields.name_ar,
+      name_en: fields.name_en,
       description_ar: fields.description_ar ?? null,
       description_en: fields.description_en ?? null,
       image_url: fields.image_url ?? null,
+      sort_order: fields.sort_order,
+      is_active: fields.is_active,
     };
-    const query = id
-      ? context.supabase.from(table).update(payload).eq("id", id)
-      : context.supabase.from(table).insert(payload);
-    const { error } = await query;
-    if (error) throw new Error(error.message);
+
+    const delegate = taxonomyDelegate(prisma, table);
+    if (id) {
+      await delegate.update({ where: { id }, data: payload });
+    } else {
+      await delegate.upsert({
+        where: { slug: fields.slug },
+        update: payload,
+        create: { slug: fields.slug, ...payload },
+      });
+    }
     return { ok: true };
   });
 
 export const deleteTaxonomy = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .middleware([requireAdmin])
+  .validator((input: unknown) =>
     z
       .object({ id: uuid, table: z.enum(["categories", "collections", "occasions"]) })
       .parse(input),
   )
-  .handler(async ({ data, context }) => {
-    const { assertAdmin } = await import("./admin.server");
-    await assertAdmin(context.supabase, context.userId);
-    const { error } = await context.supabase.from(data.table).delete().eq("id", data.id);
-    if (error) throw new Error(error.message);
+  .handler(async ({ data }) => {
+    const { prisma } = await import("@/lib/db");
+    await taxonomyDelegate(prisma, data.table).delete({ where: { id: data.id } });
     return { ok: true };
   });
 
 export const getAdminOrders = createServerFn({ method: "GET" })
-  .middleware([requireSupabaseAuth])
-  .handler(async ({ context }) => {
-    const { assertAdmin, ADMIN_ORDER_SELECT } = await import("./admin.server");
-    await assertAdmin(context.supabase, context.userId);
-    const { data, error } = await context.supabase
-      .from("orders")
-      .select(ADMIN_ORDER_SELECT)
-      .order("created_at", { ascending: false });
-    if (error) throw new Error(error.message);
-    return { orders: data ?? [] };
+  .middleware([requireAdmin])
+  .handler(async () => {
+    const { prisma } = await import("@/lib/db");
+    const { adminOrderInclude } = await import("./admin.server");
+    const orders = await prisma.orders.findMany({
+      include: adminOrderInclude,
+      orderBy: { created_at: "desc" },
+    });
+    return { orders };
   });
 
 export const updateOrder = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) =>
+  .middleware([requireAdmin])
+  .validator((input: unknown) =>
     z
       .object({
         id: uuid,
@@ -280,35 +307,31 @@ export const updateOrder = createServerFn({ method: "POST" })
       })
       .parse(input),
   )
-  .handler(async ({ data, context }) => {
-    const { assertAdmin } = await import("./admin.server");
-    await assertAdmin(context.supabase, context.userId);
+  .handler(async ({ data }) => {
+    const { prisma } = await import("@/lib/db");
 
-    const { data: current, error: cErr } = await context.supabase
-      .from("orders")
-      .select("status")
-      .eq("id", data.id)
-      .maybeSingle();
-    if (cErr) throw new Error(cErr.message);
+    const current = await prisma.orders.findUnique({
+      where: { id: data.id },
+      select: { status: true },
+    });
     if (!current) throw new Error("Order not found");
-    const from = (current as { status: string }).status;
+    const from = current.status;
 
-    const patch = {
-      ...(data.status ? { status: data.status } : {}),
-      ...(data.paymentStatus ? { payment_status: data.paymentStatus } : {}),
-      ...(data.trackingNumber !== undefined
-        ? { tracking_number: data.trackingNumber || null }
-        : {}),
-      ...(data.adminNotes !== undefined ? { admin_notes: data.adminNotes || null } : {}),
-    };
-
-    const { error } = await context.supabase.from("orders").update(patch).eq("id", data.id);
-    if (error) throw new Error(error.message);
+    await prisma.orders.update({
+      where: { id: data.id },
+      data: {
+        ...(data.status ? { status: data.status } : {}),
+        ...(data.paymentStatus ? { payment_status: data.paymentStatus } : {}),
+        ...(data.trackingNumber !== undefined
+          ? { tracking_number: data.trackingNumber || null }
+          : {}),
+        ...(data.adminNotes !== undefined ? { admin_notes: data.adminNotes || null } : {}),
+      },
+    });
 
     if (data.status && data.status !== from) {
-      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const { applyStatusStock } = await import("./orders.server");
-      await applyStatusStock(supabaseAdmin, data.id, from, data.status);
+      await applyStatusStock(data.id, from, data.status);
     }
     return { ok: true };
   });
