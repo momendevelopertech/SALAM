@@ -1,7 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -60,13 +59,6 @@ function AuthPage() {
     }
   }
 
-  async function googleSignIn() {
-    try {
-      await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "حدث خطأ");
-    }
-  }
 
   return (
     <div className="container-salam flex min-h-[70vh] items-center justify-center py-16">
@@ -116,9 +108,6 @@ function AuthPage() {
           </Button>
         </form>
 
-        <Button variant="outline" className="mt-3 w-full" onClick={googleSignIn}>
-          المتابعة بحساب Google
-        </Button>
 
         <button
           type="button"
