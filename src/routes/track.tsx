@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Check, X } from "lucide-react";
+import { Check, Package, Search, X } from "lucide-react";
 import { trackOrder } from "@/lib/checkout.functions";
 import { useI18n } from "@/lib/i18n";
 import { formatPrice, formatDate } from "@/lib/format";
@@ -93,7 +93,10 @@ function Track() {
   return (
     <div className="container-salam py-12 md:py-16">
       <div className="gold-rule" />
-      <h1 className="mt-6 font-display text-4xl">{t("order.trackTitle")}</h1>
+      <h1 className="mt-6 flex items-center gap-3 font-display text-4xl">
+        <Package className="h-8 w-8 text-primary" />
+        {t("order.trackTitle")}
+      </h1>
       <p className="mt-3 max-w-xl text-sm text-muted-foreground">{t("order.trackBody")}</p>
 
       <form onSubmit={submit} className="mt-8 flex max-w-xl flex-col gap-3 sm:flex-row">
@@ -115,8 +118,9 @@ function Track() {
         <button
           type="submit"
           disabled={loading}
-          className="h-11 rounded-sm bg-primary px-6 text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-sm bg-primary px-6 text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-60"
         >
+          <Search className="h-4 w-4" />
           {loading ? t("common.loading") : t("order.trackCta")}
         </button>
       </form>
@@ -154,7 +158,7 @@ function Track() {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">{t("order.address")}</span>
-                <span className="text-left">
+                <span className="text-start">
                   {order.city} — {order.governorate}
                 </span>
               </div>
@@ -209,7 +213,7 @@ function Track() {
                     <li key={s} className="relative flex gap-4 pb-8 last:pb-0">
                       {i < STATUSES.length - 1 && (
                         <span
-                          className={`absolute right-[11px] top-6 h-full w-px ${
+                          className={`absolute start-[11px] top-6 h-full w-px ${
                             currentIndex > i ? "bg-primary" : "bg-border"
                           }`}
                         />
@@ -247,7 +251,6 @@ function Track() {
     </div>
   );
 }
-
 function cap(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }

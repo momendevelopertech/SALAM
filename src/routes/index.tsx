@@ -1,8 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
+import { Sparkles } from "lucide-react";
 import { getCatalog } from "@/lib/catalog.functions";
 import { useI18n } from "@/lib/i18n";
 import { ProductCard, type ProductCardData } from "@/components/product-card";
+import { DirArrow } from "@/components/dir-arrow";
 
 const catalogQuery = queryOptions({ queryKey: ["catalog"], queryFn: () => getCatalog() });
 
@@ -63,9 +65,10 @@ function Home() {
             </p>
             <Link
               to="/shop"
-              className="mt-8 inline-flex rounded-sm bg-primary px-7 py-3 text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
+              className="mt-8 inline-flex items-center gap-2 rounded-sm bg-primary px-7 py-3 text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
             >
               {t("home.heroCta")}
+              <DirArrow className="h-4 w-4" />
             </Link>
           </div>
         </div>
@@ -118,9 +121,10 @@ function Home() {
           <p className="mt-5 leading-relaxed text-muted-foreground">{t("home.storyBody")}</p>
           <Link
             to="/about"
-            className="mt-7 inline-flex border-b border-primary pb-1 text-sm text-primary"
+            className="mt-7 inline-flex items-center gap-1.5 border-b border-primary pb-1 text-sm text-primary"
           >
             {t("nav.about")}
+            <DirArrow className="h-4 w-4" />
           </Link>
         </div>
       </section>
@@ -131,6 +135,7 @@ function Home() {
 function SectionTitle({ title }: { title: string }) {
   return (
     <div className="flex items-center gap-4">
+      <Sparkles className="h-4 w-4 shrink-0 text-primary" />
       <h2 className="font-display text-3xl">{title}</h2>
       <div className="hairline flex-1" />
     </div>

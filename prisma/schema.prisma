@@ -316,6 +316,17 @@ model reviews {
   @@index([is_approved])
 }
 
+model reels {
+  id         String   @id @default(uuid())
+  url        String   @unique
+  title_ar   String?
+  title_en   String?
+  sort_order Int      @default(0)
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+}
+
 model inventory_history {
   id          String   @id @default(uuid())
   variant_id  String?

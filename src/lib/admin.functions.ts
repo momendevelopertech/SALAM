@@ -64,7 +64,10 @@ type TaxonomyPayload = {
   is_active: boolean;
 };
 
-function taxonomyDelegate(prisma: Awaited<typeof import("@/lib/db")>["prisma"], table: TaxonomyTable) {
+function taxonomyDelegate(
+  prisma: Awaited<typeof import("@/lib/db")>["prisma"],
+  table: TaxonomyTable,
+) {
   switch (table) {
     case "categories":
       return prisma.categories as unknown as TaxonomyClient;
@@ -86,32 +89,40 @@ export const getAdminOverview = createServerFn({ method: "GET" })
   .handler(async () => {
     const { prisma } = await import("@/lib/db");
 
-    const [orders, productCount, activeProducts, variants, byStatus] = await Promise.all([
-      prisma.orders.findMany({
-        select: { total: true, status: true, payment_status: true, created_at: true },
+    const [
+      revenueAgg,
+      orderCount,
+      pendingPayments,
+      productCount,
+      activeProducts,
+      lowStock,
+      outOfStock,
+      byStatus,
+    ] = await Promise.all([
+      prisma.orders.aggregate({
+        _sum: { total: true },
+        where: { status: { not: "cancelled" } },
       }),
+      prisma.orders.count(),
+      prisma.orders.count({ where: { payment_status: "awaiting_verification" } }),
       prisma.products.count(),
       prisma.products.count({ where: { is_active: true } }),
-      prisma.product_variants.findMany({ select: { stock_available: true } }),
+      prisma.product_variants.count({ where: { stock_available: { gt: 0, lte: 2 } } }),
+      prisma.product_variants.count({ where: { stock_available: 0 } }),
       prisma.orders.groupBy({ by: ["status"], _count: { status: true } }),
     ]);
 
-    const revenue = orders
-      .filter((o) => o.status !== "cancelled")
-      .reduce((s, o) => s + o.total, 0);
     const byStatusMap: Record<string, number> = {};
     for (const b of byStatus) byStatusMap[b.status] = b._count.status;
 
-    const variantRows = variants as { stock_available: number }[];
-
     return {
-      revenue,
-      orderCount: orders.length,
-      pendingPayments: orders.filter((o) => o.payment_status === "awaiting_verification").length,
+      revenue: revenueAgg._sum.total ?? 0,
+      orderCount,
+      pendingPayments,
       productCount,
       activeProducts,
-      lowStock: variantRows.filter((v) => v.stock_available > 0 && v.stock_available <= 2).length,
-      outOfStock: variantRows.filter((v) => v.stock_available === 0).length,
+      lowStock,
+      outOfStock,
       byStatus: byStatusMap,
     };
   });
@@ -176,7 +187,11 @@ export const saveProduct = createServerFn({ method: "POST" })
     if (id) {
       await prisma.products.update({ where: { id }, data: payload });
     } else {
-      await prisma.products.upsert({ where: { slug: payload.slug }, update: payload, create: payload });
+      await prisma.products.upsert({
+        where: { slug: payload.slug },
+        update: payload,
+        create: payload,
+      });
     }
     return { ok: true };
   });
@@ -259,13 +274,85 @@ export const saveTaxonomy = createServerFn({ method: "POST" })
 export const deleteTaxonomy = createServerFn({ method: "POST" })
   .middleware([requireAdmin])
   .validator((input: unknown) =>
-    z
-      .object({ id: uuid, table: z.enum(["categories", "collections", "occasions"]) })
-      .parse(input),
+    z.object({ id: uuid, table: z.enum(["categories", "collections", "occasions"]) }).parse(input),
   )
   .handler(async ({ data }) => {
     const { prisma } = await import("@/lib/db");
     await taxonomyDelegate(prisma, data.table).delete({ where: { id: data.id } });
+    return { ok: true };
+  });
+
+const reelSchema = z.object({
+  id: uuid.optional(),
+  url: z
+    .string()
+    .min(1)
+    .regex(/facebook\.com\/reel\/[0-9]+/i, "أدخلي رابط ريل صالح من فيسبوك"),
+  title_ar: z.string().max(200).optional().nullable(),
+  title_en: z.string().max(200).optional().nullable(),
+  sort_order: z.number().int().min(0),
+  is_active: z.boolean(),
+});
+
+function canonicalReelUrl(url: string) {
+  const match = url.match(/facebook\.com\/reel\/([0-9]+)/i);
+  return match ? `https://www.facebook.com/reel/${match[1]}` : url.trim();
+}
+
+export const getAdminReels = createServerFn({ method: "GET" })
+  .middleware([requireAdmin])
+  .handler(async () => {
+    const { prisma } = await import("@/lib/db");
+    const reels = await prisma.reels.findMany({
+      orderBy: [{ sort_order: "asc" }, { created_at: "desc" }],
+    });
+    return { reels };
+  });
+
+export const saveReel = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .validator((input: unknown) => reelSchema.parse(input))
+  .handler(async ({ data }) => {
+    const { prisma } = await import("@/lib/db");
+    const url = canonicalReelUrl(data.url);
+    const payload = {
+      url,
+      title_ar: data.title_ar ?? null,
+      title_en: data.title_en ?? null,
+      sort_order: data.sort_order,
+      is_active: data.is_active,
+    };
+
+    if (data.id) {
+      await prisma.reels.update({ where: { id: data.id }, data: payload });
+    } else {
+      await prisma.reels.upsert({
+        where: { url },
+        update: payload,
+        create: payload,
+      });
+    }
+    return { ok: true };
+  });
+
+export const deleteReel = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .validator((input: unknown) => z.object({ id: uuid }).parse(input))
+  .handler(async ({ data }) => {
+    const { prisma } = await import("@/lib/db");
+    await prisma.reels.delete({ where: { id: data.id } });
+    return { ok: true };
+  });
+
+export const setReelActive = createServerFn({ method: "POST" })
+  .middleware([requireAdmin])
+  .validator((input: unknown) => z.object({ id: uuid, isActive: z.boolean() }).parse(input))
+  .handler(async ({ data }) => {
+    const { prisma } = await import("@/lib/db");
+    await prisma.reels.update({
+      where: { id: data.id },
+      data: { is_active: data.isActive },
+    });
     return { ok: true };
   });
 

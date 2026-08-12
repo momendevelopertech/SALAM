@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
+import { useState } from "react";
+import { ArrowUpDown, PackageSearch, Search } from "lucide-react";
 import { getCatalog } from "@/lib/catalog.functions";
 import { useI18n } from "@/lib/i18n";
 import { ProductCard, type ProductCardData } from "@/components/product-card";
@@ -34,6 +36,7 @@ export const Route = createFileRoute("/shop")({
 
 type Product = ProductCardData & {
   price: number;
+  sku?: string | null;
   category_id: string | null;
   created_at: string;
   units_sold: number;
@@ -51,11 +54,20 @@ function Shop() {
     name_en: string;
   }[];
   const active = categories.find((c) => c.slug === category);
-  const products = (data.products as unknown as Product[]).filter((p) =>
-    active ? p.category_id === active.id : true,
-  );
+  const allProducts = data.products as unknown as Product[];
+  const [query, setQuery] = useState("");
+  const products = allProducts.filter((p) => (active ? p.category_id === active.id : true));
+  const searched = products.filter((p) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      p.name_ar.toLowerCase().includes(q) ||
+      p.name_en.toLowerCase().includes(q) ||
+      p.sku?.toLowerCase().includes(q)
+    );
+  });
 
-  const sorted = [...products].sort((a, b) => {
+  const sorted = [...searched].sort((a, b) => {
     switch (sort) {
       case "price_asc":
         return (a.sale_price ?? a.price) - (b.sale_price ?? b.price);
@@ -97,19 +109,35 @@ function Shop() {
       </div>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
-        <p className="text-sm text-muted-foreground">
+        <p className="inline-flex items-center gap-1.5 text-sm text-muted-foreground">
+          <PackageSearch className="h-4 w-4 text-primary" />
           {sorted.length} {t("shop.results")}
         </p>
-        <select
-          value={sort ?? ""}
-          onChange={(e) => setSort(e.target.value)}
-          className="rounded-sm border border-border bg-surface px-3 py-1.5 text-sm text-foreground outline-none focus:border-primary"
-        >
-          <option value="">{t("shop.sortNewest")}</option>
-          <option value="best">{t("shop.sortBest")}</option>
-          <option value="price_asc">{t("shop.sortPriceAsc")}</option>
-          <option value="price_desc">{t("shop.sortPriceDesc")}</option>
-        </select>
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="relative">
+            <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={t("shop.searchPlaceholder")}
+              className="h-9 w-full rounded-sm border border-border bg-surface ps-9 pe-3 text-sm text-foreground outline-none transition-colors focus:border-primary sm:w-64"
+            />
+          </label>
+          <label className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+            <ArrowUpDown className="h-4 w-4" />
+            <span className="sr-only">{t("shop.sort")}</span>
+            <select
+              value={sort ?? ""}
+              onChange={(e) => setSort(e.target.value)}
+              className="rounded-sm border border-border bg-surface px-3 py-1.5 text-sm text-foreground outline-none focus:border-primary"
+            >
+              <option value="">{t("shop.sortNewest")}</option>
+              <option value="best">{t("shop.sortBest")}</option>
+              <option value="price_asc">{t("shop.sortPriceAsc")}</option>
+              <option value="price_desc">{t("shop.sortPriceDesc")}</option>
+            </select>
+          </label>
+        </div>
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
@@ -119,7 +147,10 @@ function Shop() {
       </div>
 
       {sorted.length === 0 && (
-        <p className="mt-10 text-sm text-muted-foreground">{t("shop.empty")}</p>
+        <div className="mt-10 flex flex-col items-center gap-3 rounded-sm border border-border bg-surface p-10 text-center">
+          <PackageSearch className="h-8 w-8 text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">{t("shop.empty")}</p>
+        </div>
       )}
     </div>
   );

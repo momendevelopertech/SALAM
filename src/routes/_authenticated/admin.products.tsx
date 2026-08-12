@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 import {
   getAdminProducts,
   saveProduct,
@@ -134,6 +135,7 @@ function emptyForm() {
 }
 
 function AdminProducts() {
+  const { t, locale } = useI18n();
   const fetchProducts = useServerFn(getAdminProducts);
   const save = useServerFn(saveProduct);
   const toggleActive = useServerFn(setProductActive);
@@ -156,7 +158,7 @@ function AdminProducts() {
   const saveMutation = useMutation({
     mutationFn: (payload: ProductPayload) => save({ data: payload }),
     onSuccess: () => {
-      toast.success("تم حفظ المنتج");
+      toast.success(t("admin.products.saved"));
       setOpen(false);
       invalidate();
     },
@@ -172,7 +174,7 @@ function AdminProducts() {
   const stockMutation = useMutation({
     mutationFn: (v: { variantId: string; stockAvailable: number }) => updateStock({ data: v }),
     onSuccess: () => {
-      toast.success("تم تحديث المخزون");
+      toast.success(t("admin.products.stockUpdated"));
       invalidate();
     },
     onError: (e: Error) => toast.error(e.message),
@@ -251,30 +253,30 @@ function AdminProducts() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-3xl">المنتجات</h1>
+        <h1 className="font-display text-3xl">{t("admin.nav.products")}</h1>
         <div className="flex gap-2">
           <Input
-            placeholder="بحث…"
+            placeholder={t("admin.products.search")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-40"
           />
-          <Button onClick={openNew}>منتج جديد</Button>
+          <Button onClick={openNew}>{t("admin.products.newProduct")}</Button>
         </div>
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">جارٍ التحميل…</p>
+        <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
       ) : (
         <div className="overflow-x-auto rounded-sm border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>المنتج</TableHead>
-                <TableHead>السعر</TableHead>
-                <TableHead>المخزون</TableHead>
-                <TableHead>التوفير</TableHead>
-                <TableHead>منشور</TableHead>
+                <TableHead>{t("admin.products.product")}</TableHead>
+                <TableHead>{t("admin.products.price")}</TableHead>
+                <TableHead>{t("admin.products.stock")}</TableHead>
+                <TableHead>{t("admin.products.fulfillment")}</TableHead>
+                <TableHead>{t("admin.products.published")}</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
@@ -300,13 +302,15 @@ function AdminProducts() {
                       </div>
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
-                      {formatPrice(p.sale_price ?? p.price, "ar")}
+                      {formatPrice(p.sale_price ?? p.price, locale)}
                     </TableCell>
                     <TableCell>
                       <span className={stock === 0 ? "text-destructive" : ""}>{stock}</span>
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-xs">
-                      {p.fulfillment === "in_stock" ? "متوفر" : "تحت الطلب"}
+                      {p.fulfillment === "in_stock"
+                        ? t("admin.products.inStock")
+                        : t("admin.products.madeToOrder")}
                     </TableCell>
                     <TableCell>
                       <Switch
@@ -316,7 +320,7 @@ function AdminProducts() {
                     </TableCell>
                     <TableCell className="text-end">
                       <Button variant="ghost" size="sm" onClick={() => openEdit(p)}>
-                        تعديل
+                        {t("common.edit")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -328,7 +332,7 @@ function AdminProducts() {
       )}
 
       <section className="space-y-3">
-        <h2 className="font-display text-2xl">المخزون حسب المقاس واللون</h2>
+        <h2 className="font-display text-2xl">{t("admin.products.stockBySize")}</h2>
         <div className="space-y-4">
           {filtered.map((p) => (
             <div key={p.id} className="rounded-sm border p-4">
@@ -341,10 +345,10 @@ function AdminProducts() {
                     </p>
                     <div className="mt-1 flex gap-1">
                       <Badge variant="secondary" className="text-[10px]">
-                        محجوز {v.stock_reserved}
+                        {t("admin.products.reserved")} {v.stock_reserved}
                       </Badge>
                       <Badge variant="secondary" className="text-[10px]">
-                        مبيع {v.stock_sold}
+                        {t("admin.products.sold")} {v.stock_sold}
                       </Badge>
                     </div>
                     <Input
@@ -369,24 +373,26 @@ function AdminProducts() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{form.id ? "تعديل منتج" : "منتج جديد"}</DialogTitle>
+            <DialogTitle>
+              {form.id ? t("admin.products.editTitle") : t("admin.products.newTitle")}
+            </DialogTitle>
           </DialogHeader>
           <form onSubmit={submit} className="grid gap-4 sm:grid-cols-2">
-            <Field label="الاسم (عربي)">
+            <Field label={t("admin.form.nameAr")}>
               <Input
                 required
                 value={form.name_ar}
                 onChange={(e) => setForm({ ...form, name_ar: e.target.value })}
               />
             </Field>
-            <Field label="الاسم (إنجليزي)">
+            <Field label={t("admin.form.nameEn")}>
               <Input
                 required
                 value={form.name_en}
                 onChange={(e) => setForm({ ...form, name_en: e.target.value })}
               />
             </Field>
-            <Field label="الرابط (slug)">
+            <Field label={t("admin.form.slug")}>
               <Input
                 required
                 dir="ltr"
@@ -394,14 +400,14 @@ function AdminProducts() {
                 onChange={(e) => setForm({ ...form, slug: e.target.value })}
               />
             </Field>
-            <Field label="كود المنتج (SKU)">
+            <Field label={t("admin.products.sku")}>
               <Input
                 dir="ltr"
                 value={form.sku}
                 onChange={(e) => setForm({ ...form, sku: e.target.value })}
               />
             </Field>
-            <Field label="سعر التكلفة">
+            <Field label={t("admin.products.costPrice")}>
               <Input
                 type="number"
                 min={0}
@@ -410,7 +416,7 @@ function AdminProducts() {
                 onChange={(e) => setForm({ ...form, cost_price: e.target.value })}
               />
             </Field>
-            <Field label="سعر البيع">
+            <Field label={t("admin.products.salePrice")}>
               <Input
                 type="number"
                 min={0}
@@ -420,7 +426,7 @@ function AdminProducts() {
                 onChange={(e) => setForm({ ...form, price: e.target.value })}
               />
             </Field>
-            <Field label="سعر العرض (اختياري)">
+            <Field label={t("admin.products.salePriceOptional")}>
               <Input
                 type="number"
                 min={0}
@@ -429,35 +435,35 @@ function AdminProducts() {
                 onChange={(e) => setForm({ ...form, sale_price: e.target.value })}
               />
             </Field>
-            <Field label="رابط الصورة الرئيسية">
+            <Field label={t("admin.products.mainImage")}>
               <Input
                 dir="ltr"
                 value={form.main_image}
                 onChange={(e) => setForm({ ...form, main_image: e.target.value })}
               />
             </Field>
-            <Field label="التصنيف">
+            <Field label={t("admin.products.category")}>
               <Picker
                 value={form.category_id}
                 options={categories}
                 onChange={(v) => setForm({ ...form, category_id: v })}
               />
             </Field>
-            <Field label="المجموعة">
+            <Field label={t("admin.products.collection")}>
               <Picker
                 value={form.collection_id}
                 options={collections}
                 onChange={(v) => setForm({ ...form, collection_id: v })}
               />
             </Field>
-            <Field label="المناسبة">
+            <Field label={t("admin.products.occasion")}>
               <Picker
                 value={form.occasion_id}
                 options={occasions}
                 onChange={(v) => setForm({ ...form, occasion_id: v })}
               />
             </Field>
-            <Field label="نوع التوفير">
+            <Field label={t("admin.products.fulfillmentType")}>
               <Select
                 value={form.fulfillment}
                 onValueChange={(v) =>
@@ -468,25 +474,27 @@ function AdminProducts() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="in_stock">متوفر بالمخزون</SelectItem>
-                  <SelectItem value="made_to_order">تحت الطلب</SelectItem>
+                  <SelectItem value="in_stock">{t("admin.products.inStockFull")}</SelectItem>
+                  <SelectItem value="made_to_order">
+                    {t("admin.products.madeToOrderFull")}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="القماش (عربي)">
+            <Field label={t("admin.products.fabricAr")}>
               <Input
                 value={form.fabric_ar}
                 onChange={(e) => setForm({ ...form, fabric_ar: e.target.value })}
               />
             </Field>
-            <Field label="القماش (إنجليزي)">
+            <Field label={t("admin.products.fabricEn")}>
               <Input
                 value={form.fabric_en}
                 onChange={(e) => setForm({ ...form, fabric_en: e.target.value })}
               />
             </Field>
             <div className="sm:col-span-2">
-              <Field label="الوصف (عربي)">
+              <Field label={t("admin.products.descriptionAr")}>
                 <Textarea
                   rows={3}
                   value={form.description_ar}
@@ -495,7 +503,7 @@ function AdminProducts() {
               </Field>
             </div>
             <div className="sm:col-span-2">
-              <Field label="الوصف (إنجليزي)">
+              <Field label={t("admin.products.descriptionEn")}>
                 <Textarea
                   rows={3}
                   value={form.description_en}
@@ -505,29 +513,29 @@ function AdminProducts() {
             </div>
             <div className="flex flex-wrap gap-6 sm:col-span-2">
               <Toggle
-                label="جديد"
+                label={t("admin.products.flagNew")}
                 checked={form.is_new}
                 onChange={(v) => setForm({ ...form, is_new: v })}
               />
               <Toggle
-                label="الأكثر مبيعًا"
+                label={t("admin.products.flagBestSeller")}
                 checked={form.is_best_seller}
                 onChange={(v) => setForm({ ...form, is_best_seller: v })}
               />
               <Toggle
-                label="إصدار محدود"
+                label={t("admin.products.flagLimited")}
                 checked={form.is_limited}
                 onChange={(v) => setForm({ ...form, is_limited: v })}
               />
               <Toggle
-                label="منشور"
+                label={t("admin.products.flagPublished")}
                 checked={form.is_active}
                 onChange={(v) => setForm({ ...form, is_active: v })}
               />
             </div>
             <DialogFooter className="sm:col-span-2">
               <Button type="submit" disabled={saveMutation.isPending}>
-                حفظ
+                {t("common.save")}
               </Button>
             </DialogFooter>
           </form>
@@ -572,13 +580,14 @@ function Picker({
   options: Taxonomy[];
   onChange: (v: string) => void;
 }) {
+  const { t } = useI18n();
   return (
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger>
-        <SelectValue placeholder="اختياري" />
+        <SelectValue placeholder={t("admin.form.optional")} />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={NONE}>بدون</SelectItem>
+        <SelectItem value={NONE}>{t("admin.form.none")}</SelectItem>
         {options.map((o) => (
           <SelectItem key={o.id} value={o.id}>
             {o.name_ar}

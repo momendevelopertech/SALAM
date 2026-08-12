@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Lightbulb, Ruler } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { DirArrow } from "@/components/dir-arrow";
 
 export const Route = createFileRoute("/size-guide")({
   head: () => ({
@@ -37,20 +39,20 @@ function SizeGuide() {
       <div className="mt-10 overflow-x-auto">
         <table className="w-full min-w-[420px] border-collapse text-sm">
           <thead>
-            <tr className="border-b border-border text-left text-muted-foreground">
-              <th className="py-3 pr-4 font-medium">{t("size.sizes")}</th>
-              <th className="py-3 pr-4 font-medium">{t("size.bust")} (cm)</th>
-              <th className="py-3 pr-4 font-medium">{t("size.length")} (cm)</th>
-              <th className="py-3 pr-4 font-medium">{t("size.hips")} (cm)</th>
+            <tr className="border-b border-border text-start text-muted-foreground">
+              <th className="py-3 pe-4 text-start font-medium">{t("size.sizes")}</th>
+              <th className="py-3 pe-4 text-start font-medium">{t("size.bust")} (cm)</th>
+              <th className="py-3 pe-4 text-start font-medium">{t("size.length")} (cm)</th>
+              <th className="py-3 pe-4 text-start font-medium">{t("size.hips")} (cm)</th>
             </tr>
           </thead>
           <tbody>
             {ROWS.map((r) => (
               <tr key={r.size} className="border-b border-border">
-                <td className="py-3.5 pr-4 font-medium">{r.size}</td>
-                <td className="py-3.5 pr-4">{r.bust}</td>
-                <td className="py-3.5 pr-4">{r.length}</td>
-                <td className="py-3.5 pr-4">{r.hips}</td>
+                <td className="py-3.5 pe-4 font-medium">{r.size}</td>
+                <td className="py-3.5 pe-4">{r.bust}</td>
+                <td className="py-3.5 pe-4">{r.length}</td>
+                <td className="py-3.5 pe-4">{r.hips}</td>
               </tr>
             ))}
           </tbody>
@@ -59,14 +61,16 @@ function SizeGuide() {
 
       <div className="mt-12 grid gap-6 lg:grid-cols-2">
         <div className="rounded-sm border border-border bg-surface p-6">
-          <h2 className="font-display text-xl">{t("size.measure")}</h2>
+          <Ruler className="h-6 w-6 text-primary" />
+          <h2 className="mt-4 font-display text-xl">{t("size.measure")}</h2>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
             {t("size.measureBody")}
           </p>
         </div>
         <div className="rounded-sm border border-border bg-surface p-6">
-          <h2 className="font-display text-xl">{t("size.tips")}</h2>
-          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-muted-foreground">
+          <Lightbulb className="h-6 w-6 text-primary" />
+          <h2 className="mt-4 font-display text-xl">{t("size.tips")}</h2>
+          <ul className="mt-3 list-disc space-y-2 ps-5 text-sm leading-relaxed text-muted-foreground">
             <li>{t("size.tip1")}</li>
             <li>{t("size.tip2")}</li>
             <li>{t("size.tip3")}</li>
@@ -77,15 +81,17 @@ function SizeGuide() {
       <div className="mt-10 flex flex-wrap gap-3">
         <Link
           to="/shop"
-          className="inline-flex rounded-sm bg-primary px-7 py-3 text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
+          className="inline-flex items-center gap-2 rounded-sm bg-primary px-7 py-3 text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
         >
           {t("shop.title")}
+          <DirArrow className="h-4 w-4" />
         </Link>
         <Link
           to="/style-finder"
-          className="inline-flex rounded-sm border border-border px-7 py-3 text-sm text-foreground transition-colors hover:border-primary hover:text-primary"
+          className="inline-flex items-center gap-2 rounded-sm border border-border px-7 py-3 text-sm text-foreground transition-colors hover:border-primary hover:text-primary"
         >
           {t("nav.styleFinder")}
+          <DirArrow className="h-4 w-4" />
         </Link>
       </div>
     </div>

@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { useState } from "react";
-import { ArrowRight, RotateCcw } from "lucide-react";
+import { CalendarDays, Palette, RotateCcw, Ruler, Sparkles } from "lucide-react";
 import { getCatalog } from "@/lib/catalog.functions";
 import { useI18n } from "@/lib/i18n";
 import { ProductCard, type ProductCardData } from "@/components/product-card";
+import { DirArrow } from "@/components/dir-arrow";
 
 const catalogQuery = queryOptions({ queryKey: ["catalog"], queryFn: () => getCatalog() });
 
@@ -83,7 +84,10 @@ function StyleFinder() {
 
           {step === 0 && (
             <section className="mt-8">
-              <h2 className="font-display text-2xl">{t("finder.occasion")}</h2>
+              <h2 className="flex items-center gap-2 font-display text-2xl">
+                <CalendarDays className="h-5 w-5 text-primary" />
+                {t("finder.occasion")}
+              </h2>
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {occasions.map((o) => (
                   <button
@@ -93,7 +97,7 @@ function StyleFinder() {
                       setOccasion(o.id);
                       setStep(1);
                     }}
-                    className="rounded-sm border border-border px-5 py-4 text-right transition-colors hover:border-primary hover:bg-primary-soft"
+                    className="rounded-sm border border-border px-5 py-4 text-start transition-colors hover:border-primary hover:bg-primary-soft"
                   >
                     {pick(o.name_ar, o.name_en)}
                   </button>
@@ -104,7 +108,10 @@ function StyleFinder() {
 
           {step === 1 && (
             <section className="mt-8">
-              <h2 className="font-display text-2xl">{t("finder.style")}</h2>
+              <h2 className="flex items-center gap-2 font-display text-2xl">
+                <Palette className="h-5 w-5 text-primary" />
+                {t("finder.style")}
+              </h2>
               <div className="mt-5 grid gap-3">
                 {STYLES.map((s) => (
                   <button
@@ -114,7 +121,7 @@ function StyleFinder() {
                       setStyle(s.value);
                       setStep(2);
                     }}
-                    className={`rounded-sm border px-5 py-4 text-right transition-colors ${
+                    className={`rounded-sm border px-5 py-4 text-start transition-colors ${
                       style === s.value
                         ? "border-primary bg-primary-soft"
                         : "border-border hover:border-primary"
@@ -129,7 +136,10 @@ function StyleFinder() {
 
           {step === 2 && (
             <section className="mt-8">
-              <h2 className="font-display text-2xl">{t("finder.fit")}</h2>
+              <h2 className="flex items-center gap-2 font-display text-2xl">
+                <Ruler className="h-5 w-5 text-primary" />
+                {t("finder.fit")}
+              </h2>
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {FITS.map((f) => (
                   <button
@@ -139,7 +149,7 @@ function StyleFinder() {
                       setFit(f.value);
                       setStep(3);
                     }}
-                    className={`rounded-sm border px-5 py-4 text-right transition-colors ${
+                    className={`rounded-sm border px-5 py-4 text-start transition-colors ${
                       fit === f.value
                         ? "border-primary bg-primary-soft"
                         : "border-border hover:border-primary"
@@ -159,7 +169,7 @@ function StyleFinder() {
                 onClick={() => setStep((s) => s - 1)}
                 className="inline-flex items-center gap-2 rounded-sm border border-border px-5 py-2.5 text-sm transition-colors hover:border-primary"
               >
-                <ArrowRight className="h-4 w-4" />
+                <DirArrow forward={false} className="h-4 w-4" />
                 {t("finder.back")}
               </button>
               <button
@@ -176,7 +186,8 @@ function StyleFinder() {
       ) : (
         <div className="mt-10">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <h2 className="font-display text-2xl">
+            <h2 className="flex items-center gap-2 font-display text-2xl">
+              <Sparkles className="h-5 w-5 text-primary" />
               {t("finder.results")} ({results.length})
             </h2>
             <button

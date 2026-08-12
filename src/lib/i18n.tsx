@@ -7,10 +7,11 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useRouter } from "@tanstack/react-router";
 
-export type Locale = "ar" | "en";
+import { persistLocale, type Locale } from "./locale";
 
-const STORAGE_KEY = "salam.locale";
+export type { Locale } from "./locale";
 
 type Dict = Record<string, { ar: string; en: string }>;
 
@@ -33,13 +34,17 @@ export const dict: Dict = {
   "nav.wishlist": { ar: "المفضلة", en: "Wishlist" },
   "nav.cart": { ar: "الحقيبة", en: "Bag" },
   "nav.admin": { ar: "الإدارة", en: "Admin" },
+  "nav.reels": { ar: "الريلز", en: "Reels" },
   "nav.signIn": { ar: "تسجيل الدخول", en: "Sign in" },
   "nav.signOut": { ar: "تسجيل الخروج", en: "Sign out" },
   "nav.menu": { ar: "القائمة", en: "Menu" },
   "nav.search": { ar: "بحث", en: "Search" },
 
   "home.heroEyebrow": { ar: "مجموعة سلام", en: "The SALAM collection" },
-  "home.heroTitle": { ar: "أناقة هادئة\nمصممة لتشبهكِ", en: "Calm elegance,\nmade to look like you" },
+  "home.heroTitle": {
+    ar: "أناقة هادئة\nمصممة لتشبهكِ",
+    en: "Calm elegance,\nmade to look like you",
+  },
   "home.heroBody": {
     ar: "عبايات وإسدالات وفساتين محتشمة بأقمشة مختارة بعناية وخطوط بسيطة تدوم.",
     en: "Abayas, esdals and modest dresses in carefully chosen fabrics and quiet lines that last.",
@@ -108,14 +113,23 @@ export const dict: Dict = {
   "product.notFound": { ar: "لم نجد هذه القطعة.", en: "We couldn't find this piece." },
   "product.quantity": { ar: "الكمية", en: "Quantity" },
   "product.outOfStock": { ar: "نفدت الكمية", en: "Sold out" },
-  "product.sizesForColor": { ar: "المقاسات المتاحة لهذا اللون", en: "Sizes available in this colour" },
+  "product.sizesForColor": {
+    ar: "المقاسات المتاحة لهذا اللون",
+    en: "Sizes available in this colour",
+  },
   "product.description": { ar: "الوصف", en: "Description" },
   "product.price": { ar: "السعر", en: "Price" },
   "product.inStock": { ar: "متوفر", en: "In stock" },
   "product.view": { ar: "عرض القطعة", en: "View piece" },
   "product.shareWhatsapp": { ar: "شاركي عبر واتساب", en: "Share on WhatsApp" },
-  "product.shippingInfo": { ar: "شحن لكل محافظات مصر — يُحسب في السلة.", en: "Shipping across all Egypt governorates — calculated at checkout." },
-  "product.returnInfo": { ar: "استبدال خلال 7 أيام من الاستلام.", en: "Exchanges accepted within 7 days of delivery." },
+  "product.shippingInfo": {
+    ar: "شحن لكل محافظات مصر — يُحسب في السلة.",
+    en: "Shipping across all Egypt governorates — calculated at checkout.",
+  },
+  "product.returnInfo": {
+    ar: "استبدال خلال 7 أيام من الاستلام.",
+    en: "Exchanges accepted within 7 days of delivery.",
+  },
   "product.details": { ar: "تفاصيل القطعة", en: "Product details" },
   "product.fabric": { ar: "القماش", en: "Fabric" },
   "product.fit": { ar: "القَصّة", en: "Fit" },
@@ -153,7 +167,10 @@ export const dict: Dict = {
   "cart.emptyBag": { ar: "حقيبتك فارغة", en: "Your bag is empty" },
 
   "wishlist.title": { ar: "المفضلة", en: "Wishlist" },
-  "wishlist.empty": { ar: "لم تضيفي قطعًا إلى المفضلة بعد.", en: "You haven't saved any pieces yet." },
+  "wishlist.empty": {
+    ar: "لم تضيفي قطعًا إلى المفضلة بعد.",
+    en: "You haven't saved any pieces yet.",
+  },
   "wishlist.emptyBody": {
     ar: "احفظي القطع التي تعجبكِ لتجدينها بسهولة لاحقًا.",
     en: "Save the pieces you love and find them easily later.",
@@ -188,7 +205,10 @@ export const dict: Dict = {
   "checkout.selectGovernorate": { ar: "اختاري المحافظة", en: "Select governorate" },
   "checkout.deliveryDays": { ar: "مدة التوصيل", en: "Delivery time" },
   "checkout.days": { ar: "أيام عمل", en: "working days" },
-  "checkout.empty": { ar: "حقيبتك فارغة — أضيفي قطعًا قبل إتمام الشراء.", en: "Your bag is empty — add pieces before checkout." },
+  "checkout.empty": {
+    ar: "حقيبتك فارغة — أضيفي قطعًا قبل إتمام الشراء.",
+    en: "Your bag is empty — add pieces before checkout.",
+  },
   "checkout.toShop": { ar: "الذهاب للمتجر", en: "Go to shop" },
   "checkout.coupon": { ar: "كود الخصم (اختياري)", en: "Discount code (optional)" },
   "checkout.fee": { ar: "رسوم الشحن", en: "Shipping fee" },
@@ -228,7 +248,10 @@ export const dict: Dict = {
     en: "Enter your order number and the mobile number used on the order.",
   },
   "order.trackCta": { ar: "تتبع", en: "Track" },
-  "order.notFound": { ar: "لم نجد طلبًا بهذه البيانات.", en: "We couldn't find an order with those details." },
+  "order.notFound": {
+    ar: "لم نجد طلبًا بهذه البيانات.",
+    en: "We couldn't find an order with those details.",
+  },
   "order.myOrders": { ar: "طلباتي", en: "My orders" },
   "order.none": { ar: "لا توجد طلبات بعد.", en: "No orders yet." },
   "order.orderNumber": { ar: "رقم الطلب", en: "Order number" },
@@ -326,9 +349,15 @@ export const dict: Dict = {
     en: "Use a flexible measuring tape. Measure the bust at its widest point, shoulders edge to edge, and length from the shoulder top to the desired hem. Always measure over light clothing.",
   },
   "size.tips": { ar: "نصائح", en: "Tips" },
-  "size.tip1": { ar: "القصّات في سلام فضفاضة ومريحة حسب التصميم.", en: "SALAM cuts are relaxed and comfortable by design." },
+  "size.tip1": {
+    ar: "القصّات في سلام فضفاضة ومريحة حسب التصميم.",
+    en: "SALAM cuts are relaxed and comfortable by design.",
+  },
   "size.tip2": { ar: "بين مقاسين؟ اختاري الأكبر.", en: "Between sizes? Choose the larger one." },
-  "size.tip3": { ar: "للاستفسار عن مقاسك أرسلي لنا على واتساب.", en: "For sizing questions message us on WhatsApp." },
+  "size.tip3": {
+    ar: "للاستفسار عن مقاسك أرسلي لنا على واتساب.",
+    en: "For sizing questions message us on WhatsApp.",
+  },
   "ship.title": { ar: "الشحن والاستبدال", en: "Shipping & Returns" },
   "ship.deliveryTitle": { ar: "الشحن والتوصيل", en: "Delivery" },
   "ship.deliveryBody": {
@@ -361,11 +390,15 @@ export const dict: Dict = {
     en: "We'd love to hear from you — for any question about our pieces or your orders, reach out on WhatsApp or email.",
   },
   "contact.whatsapp": { ar: "محادثة واتساب", en: "Chat on WhatsApp" },
-  "contact.hours": { ar: "من السبت إلى الخميس، 10 ص – 8 م", en: "Saturday to Thursday, 10am – 8pm" },
+  "contact.hours": {
+    ar: "من السبت إلى الخميس، 10 ص – 8 م",
+    en: "Saturday to Thursday, 10am – 8pm",
+  },
   "contact.email": { ar: "البريد الإلكتروني", en: "Email" },
   "contact.phone": { ar: "الهاتف", en: "Phone" },
   "contact.social": { ar: "تابعينا", en: "Follow us" },
   "contact.instagram": { ar: "انستجرام", en: "Instagram" },
+  "contact.facebook": { ar: "فيسبوك", en: "Facebook" },
   "contact.tiktok": { ar: "تيك توك", en: "TikTok" },
   "contact.askTitle": { ar: "استفسارك يهمنا", en: "We value your question" },
   "contact.whatsappBody": {
@@ -374,7 +407,153 @@ export const dict: Dict = {
   },
   "contact.whatsappCta": { ar: "ابدئي المحادثة", en: "Start the chat" },
 
+  "reels.title": { ar: "ريلز سلام", en: "SALAM Reels" },
+  "reels.body": {
+    ar: "شاهدي إطلالاتنا ومجموعاتنا عبر ريلز فيسبوك — مختارات من أحدث الفيديوهات.",
+    en: "Watch our looks and collections through our Facebook Reels — hand-picked from our latest videos.",
+  },
+  "reels.watch": { ar: "شاهدي على فيسبوك", en: "Watch on Facebook" },
+  "reels.empty": {
+    ar: "لا توجد ريلز حاليًا — تابعينا قريبًا.",
+    en: "No reels yet — check back soon.",
+  },
+  "reels.follow": { ar: "تابعينا على فيسبوك", en: "Follow us on Facebook" },
+  "reels.followBody": {
+    ar: "لمشاهدة كل الريلز أولًا بأول ومتابعة أحدث الإصدارات.",
+    en: "To see every reel as it drops and keep up with our latest releases.",
+  },
+  "reels.followCta": { ar: "متابعة الصفحة", en: "Follow the page" },
+
+  "admin.nav.overview": { ar: "نظرة عامة", en: "Overview" },
+  "admin.nav.products": { ar: "المنتجات", en: "Products" },
+  "admin.nav.catalog": { ar: "التصنيفات", en: "Catalog" },
+  "admin.nav.reels": { ar: "الريلز", en: "Reels" },
+  "admin.nav.orders": { ar: "الطلبات", en: "Orders" },
+  "admin.layout.title": { ar: "لوحة الإدارة", en: "Admin dashboard" },
+  "admin.unauthorized.title": { ar: "غير مصرّح", en: "Unauthorized" },
+  "admin.unauthorized.body": {
+    ar: "هذا القسم مخصّص لفريق الإدارة فقط. إذا كان يجب أن يكون لديكِ صلاحية، تواصلي مع مسؤول المتجر.",
+    en: "This section is reserved for the SALAM admin team. If you should have access, contact the store admin.",
+  },
+  "admin.unauthorized.back": { ar: "العودة للمتجر", en: "Back to store" },
+  "admin.yes": { ar: "نعم", en: "Yes" },
+  "admin.no": { ar: "لا", en: "No" },
+  "admin.view": { ar: "عرض", en: "View" },
+
+  "admin.overview.revenue": { ar: "إجمالي المبيعات", en: "Total revenue" },
+  "admin.overview.orders": { ar: "عدد الطلبات", en: "Orders" },
+  "admin.overview.pendingPayments": {
+    ar: "مدفوعات بانتظار المراجعة",
+    en: "Payments awaiting review",
+  },
+  "admin.overview.publishedProducts": { ar: "المنتجات المنشورة", en: "Published products" },
+  "admin.overview.lowStock": { ar: "مقاسات قاربت على النفاد", en: "Sizes running low" },
+  "admin.overview.outOfStock": { ar: "مقاسات نفدت", en: "Sizes out of stock" },
+  "admin.overview.byStatus": { ar: "الطلبات حسب الحالة", en: "Orders by status" },
+
+  "admin.catalog.title": { ar: "التصنيفات والمجموعات", en: "Categories & collections" },
+  "admin.catalog.categories": { ar: "التصنيفات", en: "Categories" },
+  "admin.catalog.collections": { ar: "المجموعات", en: "Collections" },
+  "admin.catalog.occasions": { ar: "المناسبات", en: "Occasions" },
+  "admin.catalog.name": { ar: "الاسم", en: "Name" },
+  "admin.catalog.slug": { ar: "الرابط", en: "Slug" },
+  "admin.catalog.sortOrder": { ar: "الترتيب", en: "Sort" },
+  "admin.catalog.active": { ar: "مُفعّل", en: "Active" },
+  "admin.catalog.deleted": { ar: "تم الحذف", en: "Deleted" },
+
+  "admin.form.nameAr": { ar: "الاسم (عربي)", en: "Name (Arabic)" },
+  "admin.form.nameEn": { ar: "الاسم (إنجليزي)", en: "Name (English)" },
+  "admin.form.slug": { ar: "الرابط (slug)", en: "Slug" },
+  "admin.form.imageUrl": { ar: "رابط الصورة", en: "Image URL" },
+  "admin.form.sortOrder": { ar: "الترتيب", en: "Sort order" },
+  "admin.form.active": { ar: "مُفعّل", en: "Active" },
+  "admin.form.none": { ar: "بدون", en: "None" },
+  "admin.form.optional": { ar: "اختياري", en: "Optional" },
+
+  "admin.products.search": { ar: "بحث…", en: "Search…" },
+  "admin.products.newProduct": { ar: "منتج جديد", en: "New product" },
+  "admin.products.product": { ar: "المنتج", en: "Product" },
+  "admin.products.price": { ar: "السعر", en: "Price" },
+  "admin.products.stock": { ar: "المخزون", en: "Stock" },
+  "admin.products.fulfillment": { ar: "التوفير", en: "Fulfillment" },
+  "admin.products.published": { ar: "منشور", en: "Published" },
+  "admin.products.inStock": { ar: "متوفر", en: "In stock" },
+  "admin.products.madeToOrder": { ar: "تحت الطلب", en: "Made to order" },
+  "admin.products.stockBySize": { ar: "المخزون حسب المقاس واللون", en: "Stock by size & colour" },
+  "admin.products.reserved": { ar: "محجوز", en: "Reserved" },
+  "admin.products.sold": { ar: "مبيع", en: "Sold" },
+  "admin.products.saved": { ar: "تم حفظ المنتج", en: "Product saved" },
+  "admin.products.stockUpdated": { ar: "تم تحديث المخزون", en: "Stock updated" },
+  "admin.products.newTitle": { ar: "منتج جديد", en: "New product" },
+  "admin.products.editTitle": { ar: "تعديل منتج", en: "Edit product" },
+  "admin.products.sku": { ar: "كود المنتج (SKU)", en: "SKU" },
+  "admin.products.costPrice": { ar: "سعر التكلفة", en: "Cost price" },
+  "admin.products.salePrice": { ar: "سعر البيع", en: "Sale price" },
+  "admin.products.salePriceOptional": { ar: "سعر العرض (اختياري)", en: "Promo price (optional)" },
+  "admin.products.mainImage": { ar: "رابط الصورة الرئيسية", en: "Main image URL" },
+  "admin.products.category": { ar: "التصنيف", en: "Category" },
+  "admin.products.collection": { ar: "المجموعة", en: "Collection" },
+  "admin.products.occasion": { ar: "المناسبة", en: "Occasion" },
+  "admin.products.fulfillmentType": { ar: "نوع التوفير", en: "Fulfillment type" },
+  "admin.products.inStockFull": { ar: "متوفر بالمخزون", en: "In stock" },
+  "admin.products.madeToOrderFull": { ar: "تحت الطلب", en: "Made to order" },
+  "admin.products.fabricAr": { ar: "القماش (عربي)", en: "Fabric (Arabic)" },
+  "admin.products.fabricEn": { ar: "القماش (إنجليزي)", en: "Fabric (English)" },
+  "admin.products.descriptionAr": { ar: "الوصف (عربي)", en: "Description (Arabic)" },
+  "admin.products.descriptionEn": { ar: "الوصف (إنجليزي)", en: "Description (English)" },
+  "admin.products.flagNew": { ar: "جديد", en: "New" },
+  "admin.products.flagBestSeller": { ar: "الأكثر مبيعًا", en: "Best seller" },
+  "admin.products.flagLimited": { ar: "إصدار محدود", en: "Limited" },
+  "admin.products.flagPublished": { ar: "منشور", en: "Published" },
+
+  "admin.orders.allStatuses": { ar: "كل الحالات", en: "All statuses" },
+  "admin.orders.emptyStatus": {
+    ar: "لا توجد طلبات بهذه الحالة.",
+    en: "No orders with this status.",
+  },
+  "admin.orders.orderNumber": { ar: "رقم الطلب", en: "Order number" },
+  "admin.orders.customer": { ar: "العميلة", en: "Customer" },
+  "admin.orders.date": { ar: "التاريخ", en: "Date" },
+  "admin.orders.total": { ar: "الإجمالي", en: "Total" },
+  "admin.orders.payment": { ar: "الدفع", en: "Payment" },
+  "admin.orders.status": { ar: "الحالة", en: "Status" },
+  "admin.orders.details": { ar: "تفاصيل", en: "Details" },
+  "admin.orders.updated": { ar: "تم تحديث الطلب", en: "Order updated" },
+  "admin.orders.shipping": { ar: "بيانات الشحن", en: "Shipping details" },
+  "admin.orders.products": { ar: "المنتجات", en: "Products" },
+  "admin.orders.customerNote": { ar: "ملاحظة العميلة:", en: "Customer note:" },
+  "admin.orders.paymentRef": { ar: "مرجع الدفع:", en: "Payment reference:" },
+  "admin.orders.subtotal": { ar: "المجموع:", en: "Subtotal:" },
+  "admin.orders.discount": { ar: "الخصم:", en: "Discount:" },
+  "admin.orders.shippingFee": { ar: "الشحن:", en: "Shipping:" },
+  "admin.orders.grandTotal": { ar: "الإجمالي:", en: "Total:" },
+  "admin.orders.paymentStatus": { ar: "حالة الدفع", en: "Payment status" },
+  "admin.orders.tracking": { ar: "رقم التتبع", en: "Tracking number" },
+  "admin.orders.adminNotes": { ar: "ملاحظات الإدارة", en: "Admin notes" },
+  "admin.orders.saveChanges": { ar: "حفظ التغييرات", en: "Save changes" },
+  "admin.orders.payCod": { ar: "الدفع عند الاستلام", en: "Cash on delivery" },
+  "admin.orders.payInstapay": { ar: "إنستاباي", en: "InstaPay" },
+  "admin.orders.payVodafone": { ar: "فودافون كاش", en: "Vodafone Cash" },
+
+  "admin.reels.add": { ar: "إضافة ريل", en: "Add reel" },
+  "admin.reels.preview": { ar: "معاينة", en: "Preview" },
+  "admin.reels.empty": {
+    ar: "لا توجد ريلز بعد — أضيفي أول ريل.",
+    en: "No reels yet — add your first reel.",
+  },
+  "admin.reels.title": { ar: "العنوان", en: "Title" },
+  "admin.reels.url": { ar: "الرابط", en: "URL" },
+  "admin.reels.visible": { ar: "ظاهر", en: "Visible" },
+  "admin.reels.addTitle": { ar: "إضافة ريل", en: "Add reel" },
+  "admin.reels.editTitle": { ar: "تعديل الريل", en: "Edit reel" },
+  "admin.reels.urlLabel": { ar: "رابط الريل من فيسبوك", en: "Facebook reel URL" },
+  "admin.reels.titleAr": { ar: "العنوان (عربي)", en: "Title (Arabic)" },
+  "admin.reels.titleEn": { ar: "العنوان (إنجليزي)", en: "Title (English)" },
+  "admin.reels.visibleLabel": { ar: "ظاهر في صفحة الريلز", en: "Visible on the reels page" },
+
   "common.egp": { ar: "ج.م", en: "EGP" },
+  "common.add": { ar: "إضافة", en: "Add" },
+  "common.view": { ar: "عرض", en: "View" },
   "common.loading": { ar: "جاري التحميل…", en: "Loading…" },
   "common.save": { ar: "حفظ", en: "Save" },
   "common.cancel": { ar: "إلغاء", en: "Cancel" },
@@ -403,12 +582,12 @@ type I18nValue = {
 const I18nContext = createContext<I18nValue | null>(null);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>("ar");
+  const router = useRouter();
+  const [locale, setLocaleState] = useState<Locale>(() => router.options.context.locale);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (stored === "ar" || stored === "en") setLocaleState(stored);
-  }, []);
+    persistLocale(locale);
+  }, [locale]);
 
   useEffect(() => {
     const html = document.documentElement;
@@ -418,7 +597,6 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);
-    window.localStorage.setItem(STORAGE_KEY, l);
   }, []);
 
   const value = useMemo<I18nValue>(

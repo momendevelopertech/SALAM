@@ -1,10 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { Heart, Minus, Plus, ShoppingBag, Tag, Trash2 } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { useI18n } from "@/lib/i18n";
 import { formatPrice } from "@/lib/format";
 import { validateCoupon } from "@/lib/catalog.functions";
+import { DirArrow } from "@/components/dir-arrow";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({
@@ -47,13 +48,15 @@ function Cart() {
     return (
       <div className="container-salam py-24 text-center">
         <div className="gold-rule mx-auto" />
+        <ShoppingBag className="mx-auto mt-6 h-10 w-10 text-primary" />
         <h1 className="mt-6 font-display text-4xl">{t("cart.emptyBag")}</h1>
         <p className="mt-3 text-sm text-muted-foreground">{t("cart.emptyBody")}</p>
         <Link
           to="/shop"
-          className="mt-7 inline-flex rounded-sm bg-primary px-7 py-3 text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
+          className="mt-7 inline-flex items-center gap-2 rounded-sm bg-primary px-7 py-3 text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
         >
           {t("cart.continue")}
+          <DirArrow className="h-4 w-4" />
         </Link>
       </div>
     );
@@ -131,8 +134,9 @@ function Cart() {
                       toggleWish(line.slug);
                       remove(line.variantId);
                     }}
-                    className="text-muted-foreground hover:text-primary"
+                    className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-primary"
                   >
+                    <Heart className="h-3.5 w-3.5" />
                     {t("cart.moveToWishlist")}
                   </button>
                   <button
@@ -148,11 +152,17 @@ function Cart() {
             </div>
           ))}
           <div className="mt-6 flex justify-between text-xs text-muted-foreground">
-            <button type="button" onClick={clear} className="hover:text-destructive">
+            <button
+              type="button"
+              onClick={clear}
+              className="inline-flex items-center gap-1.5 hover:text-destructive"
+            >
+              <Trash2 className="h-3.5 w-3.5" />
               {t("common.delete")} ({t("cart.title")})
             </button>
-            <Link to="/shop" className="hover:text-primary">
+            <Link to="/shop" className="inline-flex items-center gap-1.5 hover:text-primary">
               {t("cart.continue")}
+              <DirArrow className="h-3.5 w-3.5" />
             </Link>
           </div>
         </div>
@@ -161,15 +171,18 @@ function Cart() {
           <h2 className="font-display text-xl">{t("checkout.summary")}</h2>
 
           <div className="mt-4 flex gap-2">
-            <input
-              value={code}
-              onChange={(e) => {
-                setCode(e.target.value);
-                setCouponError(false);
-              }}
-              placeholder={t("cart.coupon")}
-              className="h-10 flex-1 rounded-sm border border-input bg-surface px-3 text-sm outline-none focus:border-primary"
-            />
+            <div className="relative flex-1">
+              <Tag className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                value={code}
+                onChange={(e) => {
+                  setCode(e.target.value);
+                  setCouponError(false);
+                }}
+                placeholder={t("cart.coupon")}
+                className="h-10 w-full rounded-sm border border-input bg-surface ps-9 pe-3 text-sm outline-none focus:border-primary"
+              />
+            </div>
             <button
               type="button"
               onClick={applyCoupon}
@@ -213,8 +226,9 @@ function Cart() {
 
           <Link
             to="/checkout"
-            className="mt-6 block rounded-sm bg-primary px-6 py-3 text-center text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
+            className="mt-6 inline-flex items-center justify-center gap-2 rounded-sm bg-primary px-6 py-3 text-center text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
           >
+            <ShoppingBag className="h-4 w-4" />
             {t("cart.checkout")}
           </Link>
         </aside>

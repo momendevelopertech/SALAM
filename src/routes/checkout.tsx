@@ -1,12 +1,22 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { useState } from "react";
-import { CheckCircle2 } from "lucide-react";
+import {
+  Banknote,
+  CheckCircle2,
+  CreditCard,
+  MapPin,
+  PackageSearch,
+  Smartphone,
+  User,
+  Wallet,
+} from "lucide-react";
 import { getCatalog } from "@/lib/catalog.functions";
 import { placeOrder } from "@/lib/checkout.functions";
 import { useCart } from "@/lib/cart";
 import { useI18n } from "@/lib/i18n";
 import { formatPrice } from "@/lib/format";
+import { DirArrow } from "@/components/dir-arrow";
 
 const catalogQuery = queryOptions({ queryKey: ["catalog"], queryFn: () => getCatalog() });
 
@@ -74,9 +84,10 @@ function Checkout() {
         <p className="mt-3 text-sm text-muted-foreground">{t("checkout.empty")}</p>
         <Link
           to="/shop"
-          className="mt-7 inline-flex rounded-sm bg-primary px-7 py-3 text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
+          className="mt-7 inline-flex items-center gap-2 rounded-sm bg-primary px-7 py-3 text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
         >
           {t("checkout.toShop")}
+          <DirArrow className="h-4 w-4" />
         </Link>
       </div>
     );
@@ -90,7 +101,7 @@ function Checkout() {
           <h1 className="mt-6 font-display text-4xl">{t("order.confirmedTitle")}</h1>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{t("order.thanks")}</p>
 
-          <div className="mt-8 rounded-sm border border-border bg-surface p-6 text-right">
+          <div className="mt-8 rounded-sm border border-border bg-surface p-6 text-start">
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">{t("order.number")}</span>
               <span className="font-medium">{confirmation.orderNumber}</span>
@@ -124,15 +135,17 @@ function Checkout() {
             <Link
               to="/track"
               search={{ orderNumber: confirmation.orderNumber }}
-              className="inline-flex rounded-sm bg-primary px-6 py-3 text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
+              className="inline-flex items-center gap-2 rounded-sm bg-primary px-6 py-3 text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
             >
+              <PackageSearch className="h-4 w-4" />
               {t("order.trackTitle")}
             </Link>
             <Link
               to="/shop"
-              className="inline-flex rounded-sm border border-border px-6 py-3 text-sm text-foreground transition-colors hover:border-primary hover:text-primary"
+              className="inline-flex items-center gap-2 rounded-sm border border-border px-6 py-3 text-sm text-foreground transition-colors hover:border-primary hover:text-primary"
             >
               {t("checkout.keepShopping")}
+              <DirArrow className="h-4 w-4" />
             </Link>
           </div>
         </div>
@@ -194,7 +207,10 @@ function Checkout() {
           className="space-y-8"
         >
           <section>
-            <h2 className="font-display text-xl">{t("checkout.customerInfo")}</h2>
+            <h2 className="flex items-center gap-2 font-display text-xl">
+              <User className="h-5 w-5 text-primary" />
+              {t("checkout.customerInfo")}
+            </h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div>
                 <label className={labelCls}>{t("checkout.name")}</label>
@@ -228,7 +244,10 @@ function Checkout() {
           </section>
 
           <section>
-            <h2 className="font-display text-xl">{t("checkout.address")}</h2>
+            <h2 className="flex items-center gap-2 font-display text-xl">
+              <MapPin className="h-5 w-5 text-primary" />
+              {t("checkout.address")}
+            </h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div>
                 <label className={labelCls}>{t("checkout.governorate")}</label>
@@ -282,15 +301,18 @@ function Checkout() {
           </section>
 
           <section>
-            <h2 className="font-display text-xl">{t("checkout.payment")}</h2>
+            <h2 className="flex items-center gap-2 font-display text-xl">
+              <CreditCard className="h-5 w-5 text-primary" />
+              {t("checkout.payment")}
+            </h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-3">
               {(
                 [
-                  ["cod", t("checkout.cod"), t("checkout.codNote")],
-                  ["instapay", t("checkout.instapay"), ""],
-                  ["vodafone_cash", t("checkout.vodafone"), ""],
+                  ["cod", t("checkout.cod"), t("checkout.codNote"), Banknote],
+                  ["instapay", t("checkout.instapay"), "", Wallet],
+                  ["vodafone_cash", t("checkout.vodafone"), "", Smartphone],
                 ] as const
-              ).map(([value, label, note]) => (
+              ).map(([value, label, note, Icon]) => (
                 <label
                   key={value}
                   className={`cursor-pointer rounded-sm border p-4 transition-colors ${
@@ -307,7 +329,8 @@ function Checkout() {
                     onChange={() => setPaymentMethod(value)}
                     className="sr-only"
                   />
-                  <span className="text-sm font-medium">{label}</span>
+                  <Icon className="h-5 w-5 text-primary" />
+                  <span className="mt-2 block text-sm font-medium">{label}</span>
                   {note && <span className="mt-1 block text-xs text-muted-foreground">{note}</span>}
                 </label>
               ))}

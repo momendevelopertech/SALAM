@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { MessageCircle, Mail, Phone, Instagram } from "lucide-react";
+import { Facebook, Instagram, Mail, MessageCircle, Phone } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { whatsappLink } from "@/lib/format";
 
@@ -45,10 +45,10 @@ function Contact() {
           <Mail className="h-6 w-6 text-primary" />
           <h2 className="mt-4 font-display text-xl">{t("contact.email")}</h2>
           <a
-            href="mailto:hello@salam.store"
+            href="mailto:Salam.modest.wear@gmail.com"
             className="mt-2 block text-sm text-foreground hover:text-primary"
           >
-            hello@salam.store
+            Salam.modest.wear@gmail.com
           </a>
         </div>
 
@@ -56,10 +56,10 @@ function Contact() {
           <Phone className="h-6 w-6 text-primary" />
           <h2 className="mt-4 font-display text-xl">{t("contact.phone")}</h2>
           <a
-            href="tel:+201000000000"
+            href="tel:+201093132565"
             className="mt-2 block text-sm text-foreground hover:text-primary"
           >
-            +20 100 000 0000
+            +20 10 93132565
           </a>
         </div>
       </div>
@@ -69,20 +69,31 @@ function Contact() {
         <h2 className="mt-4 font-display text-xl">{t("contact.social")}</h2>
         <div className="mt-3 flex flex-wrap gap-3 text-sm">
           <a
-            href="https://instagram.com"
+            href="https://instagram.com/salam_modest"
             target="_blank"
             rel="noreferrer"
-            className="text-foreground hover:text-primary"
+            className="inline-flex items-center gap-1.5 rounded-sm border border-border px-3 py-1.5 text-foreground transition-colors hover:border-primary hover:text-primary"
           >
+            <Instagram className="h-4 w-4" />
             {t("contact.instagram")}
           </a>
           <a
-            href="https://tiktok.com"
+            href="https://www.facebook.com/share/1Lhe8YTbLH/"
             target="_blank"
             rel="noreferrer"
-            className="text-foreground hover:text-primary"
+            className="inline-flex items-center gap-1.5 rounded-sm border border-border px-3 py-1.5 text-foreground transition-colors hover:border-primary hover:text-primary"
           >
-            {t("contact.tiktok")}
+            <Facebook className="h-4 w-4" />
+            {t("contact.facebook")}
+          </a>
+          <a
+            href={whatsappLink(t("contact.askTitle"))}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-sm border border-border px-3 py-1.5 text-foreground transition-colors hover:border-primary hover:text-primary"
+          >
+            <MessageCircle className="h-4 w-4" />
+            {t("contact.whatsapp")}
           </a>
         </div>
       </div>

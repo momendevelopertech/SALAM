@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
+import { LogIn, Lock, Mail, User } from "lucide-react";
 import { login, register } from "@/lib/auth.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +17,10 @@ export const Route = createFileRoute("/auth")({
         content: "سجّلي الدخول إلى حسابك في سلام لمتابعة طلباتك أو للوصول إلى لوحة الإدارة.",
       },
       { property: "og:title", content: "Sign in — SALAM" },
-      { property: "og:description", content: "Sign in to your SALAM account or the admin dashboard." },
+      {
+        property: "og:description",
+        content: "Sign in to your SALAM account or the admin dashboard.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -68,7 +72,6 @@ function AuthPage() {
     }
   }
 
-
   return (
     <div className="container-salam flex min-h-[70vh] items-center justify-center py-16">
       <div className="w-full max-w-sm">
@@ -86,33 +89,50 @@ function AuthPage() {
           {mode === "signup" && (
             <div className="space-y-1.5">
               <Label htmlFor="fullName">الاسم</Label>
-              <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+              <div className="relative">
+                <User className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="fullName"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="ps-9"
+                />
+              </div>
             </div>
           )}
           <div className="space-y-1.5">
             <Label htmlFor="email">البريد الإلكتروني</Label>
-            <Input
-              id="email"
-              type="email"
-              required
-              dir="ltr"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <div className="relative">
+              <Mail className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="email"
+                type="email"
+                required
+                dir="ltr"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="ps-9"
+              />
+            </div>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="password">كلمة المرور</Label>
-            <Input
-              id="password"
-              type="password"
-              required
-              minLength={6}
-              dir="ltr"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <div className="relative">
+              <Lock className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                id="password"
+                type="password"
+                required
+                minLength={6}
+                dir="ltr"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="ps-9"
+              />
+            </div>
           </div>
           <Button type="submit" className="w-full" disabled={busy}>
+            <LogIn className="h-4 w-4" />
             {mode === "signin" ? "دخول" : "إنشاء الحساب"}
           </Button>
         </form>
@@ -126,7 +146,6 @@ function AuthPage() {
         >
           دخول سريع كأدمن (تيست)
         </Button>
-
 
         <button
           type="button"

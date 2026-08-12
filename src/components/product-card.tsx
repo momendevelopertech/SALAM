@@ -1,11 +1,13 @@
 import { Link } from "@tanstack/react-router";
-import { Heart } from "lucide-react";
+import { Heart, ShoppingBag } from "lucide-react";
+import { toast } from "sonner";
 import { useCart } from "@/lib/cart";
 import { useI18n } from "@/lib/i18n";
 import { formatPrice, discountPercent } from "@/lib/format";
 
 export type ProductCardData = {
   slug: string;
+  id?: string;
   name_ar: string;
   name_en: string;
   price: number;
@@ -15,6 +17,7 @@ export type ProductCardData = {
   is_best_seller?: boolean;
   is_limited?: boolean;
   product_variants?: {
+    id?: string;
     color_ar: string;
     color_en: string;
     color_hex: string;
@@ -24,11 +27,36 @@ export type ProductCardData = {
 
 export function ProductCard({ product }: { product: ProductCardData }) {
   const { t, pick, locale } = useI18n();
-  const { isWished, toggleWish } = useCart();
+  const { isWished, toggleWish, add } = useCart();
   const wished = isWished(product.slug);
   const soldOut = product.product_variants?.every((v) => v.stock_available === 0) ?? false;
   const discount = discountPercent(product.price, product.sale_price);
   const colors = product.product_variants ?? [];
+
+  const quickAdd = () => {
+    const variant = product.product_variants?.find((v) => v.stock_available > 0);
+    if (!variant || soldOut || !product.id) {
+      toast(t("product.chooseFirst"));
+      return;
+    }
+    add(
+      {
+        variantId: variant.id ?? product.slug,
+        productId: product.id,
+        slug: product.slug,
+        nameAr: product.name_ar,
+        nameEn: product.name_en,
+        colorAr: variant.color_ar,
+        colorEn: variant.color_en,
+        size: "",
+        unitPrice: product.sale_price ?? product.price,
+        image: product.main_image,
+        maxQuantity: Math.max(1, variant.stock_available),
+      },
+      1,
+    );
+    toast(t("product.added"));
+  };
 
   return (
     <div className="group relative">
@@ -51,7 +79,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             />
           )}
           {(discount > 0 || product.is_new || product.is_limited) && (
-            <div className="absolute right-3 top-3 flex flex-col gap-1.5">
+            <div className="absolute end-3 top-3 flex flex-col gap-1.5">
               {discount > 0 && (
                 <span className="rounded-sm bg-primary px-2 py-0.5 text-[11px] font-medium text-primary-foreground">
                   {discount}% {t("badge.sale")}
@@ -75,6 +103,17 @@ export function ProductCard({ product }: { product: ProductCardData }) {
                 {t("badge.soldOut")}
               </span>
             </div>
+          )}
+          {!soldOut && (
+            <button
+              type="button"
+              onClick={quickAdd}
+              aria-label={t("product.addToBag")}
+              className="absolute inset-x-3 bottom-3 flex items-center justify-center gap-2 rounded-sm bg-foreground/90 py-2.5 text-xs font-medium text-background opacity-0 backdrop-blur transition-opacity duration-300 group-hover:opacity-100"
+            >
+              <ShoppingBag className="h-4 w-4" />
+              {t("product.addToBag")}
+            </button>
           )}
         </div>
         <div className="mt-3 text-sm">{pick(product.name_ar, product.name_en)}</div>
@@ -107,7 +146,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         type="button"
         onClick={() => toggleWish(product.slug)}
         aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
-        className={`absolute left-3 top-3 flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${
+        className={`absolute start-3 top-3 flex h-8 w-8 items-center justify-center rounded-full border transition-colors ${
           wished
             ? "border-primary bg-primary text-primary-foreground"
             : "border-border bg-surface/80 text-foreground/60 hover:text-primary"

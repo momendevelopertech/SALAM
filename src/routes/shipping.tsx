@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { MessageCircle, Truck, RotateCcw, HelpCircle } from "lucide-react";
+import { HelpCircle, MessageCircle, RotateCcw, Truck } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { whatsappLink } from "@/lib/format";
+import { DirArrow } from "@/components/dir-arrow";
 
 export const Route = createFileRoute("/shipping")({
   head: () => ({
@@ -75,8 +76,12 @@ function Shipping() {
       </div>
 
       <div className="mt-8">
-        <Link to="/shop" className="text-sm text-primary hover:underline">
+        <Link
+          to="/shop"
+          className="inline-flex items-center gap-2 text-sm text-primary hover:underline"
+        >
           {t("cart.continue")}
+          <DirArrow className="h-4 w-4" />
         </Link>
       </div>
     </div>

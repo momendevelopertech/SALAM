@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 import { deleteTaxonomy, getAdminTaxonomies, saveTaxonomy } from "@/lib/admin.functions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,10 +57,10 @@ type Payload = {
   is_active: boolean;
 };
 
-const TABS: { key: TaxTable; label: string }[] = [
-  { key: "categories", label: "التصنيفات" },
-  { key: "collections", label: "المجموعات" },
-  { key: "occasions", label: "المناسبات" },
+const TABS: { key: TaxTable; labelKey: string }[] = [
+  { key: "categories", labelKey: "admin.catalog.categories" },
+  { key: "collections", labelKey: "admin.catalog.collections" },
+  { key: "occasions", labelKey: "admin.catalog.occasions" },
 ];
 
 function emptyForm(table: TaxTable) {
@@ -78,6 +79,7 @@ function emptyForm(table: TaxTable) {
 }
 
 function AdminCatalog() {
+  const { t } = useI18n();
   const fetchAll = useServerFn(getAdminTaxonomies);
   const save = useServerFn(saveTaxonomy);
   const remove = useServerFn(deleteTaxonomy);
@@ -97,7 +99,7 @@ function AdminCatalog() {
   const saveMutation = useMutation({
     mutationFn: (payload: Payload) => save({ data: payload }),
     onSuccess: () => {
-      toast.success("تم الحفظ");
+      toast.success(t("common.saved"));
       setOpen(false);
       invalidate();
     },
@@ -107,7 +109,7 @@ function AdminCatalog() {
   const removeMutation = useMutation({
     mutationFn: (v: { id: string; table: TaxTable }) => remove({ data: v }),
     onSuccess: () => {
-      toast.success("تم الحذف");
+      toast.success(t("admin.catalog.deleted"));
       invalidate();
     },
     onError: (e: Error) => toast.error(e.message),
@@ -152,34 +154,34 @@ function AdminCatalog() {
 
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-3xl">التصنيفات والمجموعات</h1>
+      <h1 className="font-display text-3xl">{t("admin.catalog.title")}</h1>
 
       {isLoading || !data ? (
-        <p className="text-sm text-muted-foreground">جارٍ التحميل…</p>
+        <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
       ) : (
         <Tabs defaultValue="categories">
           <TabsList>
-            {TABS.map((t) => (
-              <TabsTrigger key={t.key} value={t.key}>
-                {t.label}
+            {TABS.map((tab) => (
+              <TabsTrigger key={tab.key} value={tab.key}>
+                {t(tab.labelKey)}
               </TabsTrigger>
             ))}
           </TabsList>
-          {TABS.map((t) => {
-            const rows = (data[t.key] ?? []) as unknown as Row[];
+          {TABS.map((tab) => {
+            const rows = (data[tab.key] ?? []) as unknown as Row[];
             return (
-              <TabsContent key={t.key} value={t.key} className="space-y-4">
+              <TabsContent key={tab.key} value={tab.key} className="space-y-4">
                 <div className="flex justify-end">
-                  <Button onClick={() => openNew(t.key)}>إضافة</Button>
+                  <Button onClick={() => openNew(tab.key)}>{t("common.add")}</Button>
                 </div>
                 <div className="overflow-x-auto rounded-sm border">
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>الاسم</TableHead>
-                        <TableHead>الرابط</TableHead>
-                        <TableHead>الترتيب</TableHead>
-                        <TableHead>مُفعّل</TableHead>
+                        <TableHead>{t("admin.catalog.name")}</TableHead>
+                        <TableHead className="text-left">{t("admin.catalog.slug")}</TableHead>
+                        <TableHead>{t("admin.catalog.sortOrder")}</TableHead>
+                        <TableHead>{t("admin.catalog.active")}</TableHead>
                         <TableHead />
                       </TableRow>
                     </TableHeader>
@@ -194,18 +196,22 @@ function AdminCatalog() {
                             {row.slug}
                           </TableCell>
                           <TableCell>{row.sort_order}</TableCell>
-                          <TableCell>{row.is_active ? "نعم" : "لا"}</TableCell>
+                          <TableCell>{row.is_active ? t("admin.yes") : t("admin.no")}</TableCell>
                           <TableCell className="text-end">
-                            <Button variant="ghost" size="sm" onClick={() => openEdit(t.key, row)}>
-                              تعديل
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => openEdit(tab.key, row)}
+                            >
+                              {t("common.edit")}
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
                               className="text-destructive"
-                              onClick={() => removeMutation.mutate({ id: row.id, table: t.key })}
+                              onClick={() => removeMutation.mutate({ id: row.id, table: tab.key })}
                             >
-                              حذف
+                              {t("common.delete")}
                             </Button>
                           </TableCell>
                         </TableRow>
@@ -222,11 +228,11 @@ function AdminCatalog() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{form.id ? "تعديل" : "إضافة"}</DialogTitle>
+            <DialogTitle>{form.id ? t("common.edit") : t("common.add")}</DialogTitle>
           </DialogHeader>
           <form onSubmit={submit} className="space-y-4">
             <div className="space-y-1.5">
-              <Label>الاسم (عربي)</Label>
+              <Label>{t("admin.form.nameAr")}</Label>
               <Input
                 required
                 value={form.name_ar}
@@ -234,7 +240,7 @@ function AdminCatalog() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label>الاسم (إنجليزي)</Label>
+              <Label>{t("admin.form.nameEn")}</Label>
               <Input
                 required
                 value={form.name_en}
@@ -242,7 +248,7 @@ function AdminCatalog() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label>الرابط (slug)</Label>
+              <Label>{t("admin.form.slug")}</Label>
               <Input
                 required
                 dir="ltr"
@@ -251,7 +257,7 @@ function AdminCatalog() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label>رابط الصورة</Label>
+              <Label>{t("admin.form.imageUrl")}</Label>
               <Input
                 dir="ltr"
                 value={form.image_url}
@@ -259,7 +265,7 @@ function AdminCatalog() {
               />
             </div>
             <div className="space-y-1.5">
-              <Label>الترتيب</Label>
+              <Label>{t("admin.form.sortOrder")}</Label>
               <Input
                 type="number"
                 value={form.sort_order}
@@ -271,11 +277,11 @@ function AdminCatalog() {
                 checked={form.is_active}
                 onCheckedChange={(v) => setForm({ ...form, is_active: v })}
               />
-              مُفعّل
+              {t("admin.form.active")}
             </label>
             <DialogFooter>
               <Button type="submit" disabled={saveMutation.isPending}>
-                حفظ
+                {t("common.save")}
               </Button>
             </DialogFooter>
           </form>

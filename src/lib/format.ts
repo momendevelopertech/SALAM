@@ -22,7 +22,7 @@ export function discountPercent(price: number, salePrice?: number | null) {
   return Math.round(((price - salePrice) / price) * 100);
 }
 
-export const WHATSAPP_NUMBER = "201000000000";
+export const WHATSAPP_NUMBER = "201093132565";
 
 export function whatsappLink(message: string) {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;

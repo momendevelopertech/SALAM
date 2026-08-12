@@ -50,8 +50,7 @@ export async function createOrder(input: PlaceOrderInput) {
     where: { id: { in: variantIds } },
     include: { products: true },
   })) as unknown as VariantRow[];
-  if (variants.length !== variantIds.length)
-    throw new Error("بعض المنتجات في السلة لم تعد متاحة");
+  if (variants.length !== variantIds.length) throw new Error("بعض المنتجات في السلة لم تعد متاحة");
 
   const lines = input.items.map((item) => {
     const v = variants.find((r) => r.id === item.variantId)!;

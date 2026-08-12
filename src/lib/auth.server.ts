@@ -54,6 +54,7 @@ export async function getSessionUser() {
     where: { token_hash: tokenHash(token) },
     include: { users: true },
   });
-  if (!session || session.expires_at.getTime() < Date.now() || !session.users.is_active) return null;
+  if (!session || session.expires_at.getTime() < Date.now() || !session.users.is_active)
+    return null;
   return session.users;
 }

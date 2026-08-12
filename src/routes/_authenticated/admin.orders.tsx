@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Fragment, useState } from "react";
 import { toast } from "sonner";
+import { useI18n } from "@/lib/i18n";
 import { getAdminOrders, updateOrder } from "@/lib/admin.functions";
 import { formatDate, formatPrice } from "@/lib/format";
 import { Button } from "@/components/ui/button";
@@ -77,32 +78,27 @@ type Order = {
   order_items: Item[];
 };
 
-const STATUS: { value: OrderStatus; label: string }[] = [
-  { value: "pending", label: "قيد الانتظار" },
-  { value: "confirmed", label: "مؤكد" },
-  { value: "preparing", label: "قيد التجهيز" },
-  { value: "ready_for_shipping", label: "جاهز للشحن" },
-  { value: "shipped", label: "تم الشحن" },
-  { value: "out_for_delivery", label: "قيد التوصيل" },
-  { value: "delivered", label: "تم التسليم" },
-  { value: "cancelled", label: "ملغي" },
+const STATUS: OrderStatus[] = [
+  "pending",
+  "confirmed",
+  "preparing",
+  "ready_for_shipping",
+  "shipped",
+  "out_for_delivery",
+  "delivered",
+  "cancelled",
 ];
 
-const PAYMENT: { value: PaymentStatus; label: string }[] = [
-  { value: "pending", label: "غير مدفوع" },
-  { value: "awaiting_verification", label: "بانتظار المراجعة" },
-  { value: "paid", label: "مدفوع" },
-  { value: "failed", label: "فشل" },
-  { value: "refunded", label: "مسترد" },
-];
+const PAYMENT: PaymentStatus[] = ["pending", "awaiting_verification", "paid", "failed", "refunded"];
 
-const METHOD: Record<Order["payment_method"], string> = {
-  cod: "الدفع عند الاستلام",
-  instapay: "إنستاباي",
-  vodafone_cash: "فودافون كاش",
+const METHOD_LABELS: Record<Order["payment_method"], string> = {
+  cod: "admin.orders.payCod",
+  instapay: "admin.orders.payInstapay",
+  vodafone_cash: "admin.orders.payVodafone",
 };
 
 function AdminOrders() {
+  const { t, locale } = useI18n();
   const fetchOrders = useServerFn(getAdminOrders);
   const patch = useServerFn(updateOrder);
   const queryClient = useQueryClient();
@@ -123,7 +119,7 @@ function AdminOrders() {
       adminNotes?: string;
     }) => patch({ data: v }),
     onSuccess: () => {
-      toast.success("تم تحديث الطلب");
+      toast.success(t("admin.orders.updated"));
       void queryClient.invalidateQueries({ queryKey: ["admin"] });
     },
     onError: (e: Error) => toast.error(e.message),
@@ -135,16 +131,16 @@ function AdminOrders() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-3xl">الطلبات</h1>
+        <h1 className="font-display text-3xl">{t("admin.nav.orders")}</h1>
         <Select value={filter} onValueChange={(v) => setFilter(v as typeof filter)}>
           <SelectTrigger className="w-48">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">كل الحالات</SelectItem>
+            <SelectItem value="all">{t("admin.orders.allStatuses")}</SelectItem>
             {STATUS.map((s) => (
-              <SelectItem key={s.value} value={s.value}>
-                {s.label}
+              <SelectItem key={s} value={s}>
+                {t(`status.${s}`)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -152,20 +148,20 @@ function AdminOrders() {
       </div>
 
       {isLoading ? (
-        <p className="text-sm text-muted-foreground">جارٍ التحميل…</p>
+        <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
       ) : visible.length === 0 ? (
-        <p className="text-sm text-muted-foreground">لا توجد طلبات بهذه الحالة.</p>
+        <p className="text-sm text-muted-foreground">{t("admin.orders.emptyStatus")}</p>
       ) : (
         <div className="overflow-x-auto rounded-sm border">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>رقم الطلب</TableHead>
-                <TableHead>العميلة</TableHead>
-                <TableHead>التاريخ</TableHead>
-                <TableHead>الإجمالي</TableHead>
-                <TableHead>الدفع</TableHead>
-                <TableHead>الحالة</TableHead>
+                <TableHead className="text-left">{t("admin.orders.orderNumber")}</TableHead>
+                <TableHead>{t("admin.orders.customer")}</TableHead>
+                <TableHead>{t("admin.orders.date")}</TableHead>
+                <TableHead>{t("admin.orders.total")}</TableHead>
+                <TableHead>{t("admin.orders.payment")}</TableHead>
+                <TableHead>{t("admin.orders.status")}</TableHead>
                 <TableHead />
               </TableRow>
             </TableHeader>
@@ -183,17 +179,17 @@ function AdminOrders() {
                       </p>
                     </TableCell>
                     <TableCell className="whitespace-nowrap text-xs">
-                      {formatDate(o.created_at, "ar")}
+                      {formatDate(o.created_at, locale)}
                     </TableCell>
                     <TableCell className="whitespace-nowrap">
-                      {formatPrice(o.total, "ar")}
+                      {formatPrice(o.total, locale)}
                     </TableCell>
                     <TableCell>
                       <Badge variant={o.payment_status === "paid" ? "default" : "secondary"}>
-                        {PAYMENT.find((p) => p.value === o.payment_status)?.label}
+                        {t(`pay.${o.payment_status}`)}
                       </Badge>
                       <p className="mt-1 text-[10px] text-muted-foreground">
-                        {METHOD[o.payment_method]}
+                        {t(METHOD_LABELS[o.payment_method])}
                       </p>
                     </TableCell>
                     <TableCell>
@@ -208,8 +204,8 @@ function AdminOrders() {
                         </SelectTrigger>
                         <SelectContent>
                           {STATUS.map((s) => (
-                            <SelectItem key={s.value} value={s.value}>
-                              {s.label}
+                            <SelectItem key={s} value={s}>
+                              {t(`status.${s}`)}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -221,7 +217,7 @@ function AdminOrders() {
                         size="sm"
                         onClick={() => setExpanded(expanded === o.id ? null : o.id)}
                       >
-                        {expanded === o.id ? "إغلاق" : "تفاصيل"}
+                        {expanded === o.id ? t("common.close") : t("admin.orders.details")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -259,6 +255,7 @@ function OrderDetails({
   }) => void;
   saving: boolean;
 }) {
+  const { t, locale } = useI18n();
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>(order.payment_status);
   const [tracking, setTracking] = useState(order.tracking_number ?? "");
   const [notes, setNotes] = useState(order.admin_notes ?? "");
@@ -266,7 +263,7 @@ function OrderDetails({
   return (
     <div className="grid gap-6 py-4 lg:grid-cols-3">
       <div className="space-y-1 text-sm">
-        <p className="font-medium">بيانات الشحن</p>
+        <p className="font-medium">{t("admin.orders.shipping")}</p>
         <p className="text-muted-foreground">
           {order.governorate} — {order.city}
         </p>
@@ -276,52 +273,66 @@ function OrderDetails({
             {order.email}
           </p>
         ) : null}
-        {order.notes ? <p className="text-muted-foreground">ملاحظة العميلة: {order.notes}</p> : null}
+        {order.notes ? (
+          <p className="text-muted-foreground">
+            {t("admin.orders.customerNote")} {order.notes}
+          </p>
+        ) : null}
         {order.payment_reference ? (
-          <p className="text-muted-foreground">مرجع الدفع: {order.payment_reference}</p>
+          <p className="text-muted-foreground">
+            {t("admin.orders.paymentRef")} {order.payment_reference}
+          </p>
         ) : null}
       </div>
 
       <div className="space-y-2 text-sm">
-        <p className="font-medium">المنتجات</p>
+        <p className="font-medium">{t("admin.orders.products")}</p>
         {order.order_items.map((it) => (
           <div key={it.id} className="flex justify-between gap-3">
             <span className="text-muted-foreground">
               {it.name_ar} — {it.color_ar} / {it.size} × {it.quantity}
             </span>
-            <span>{formatPrice(it.line_total, "ar")}</span>
+            <span>{formatPrice(it.line_total, locale)}</span>
           </div>
         ))}
         <div className="mt-2 border-t pt-2 text-xs text-muted-foreground">
-          <p>المجموع: {formatPrice(order.subtotal, "ar")}</p>
-          <p>الخصم: {formatPrice(order.discount, "ar")}</p>
-          <p>الشحن: {formatPrice(order.shipping_fee, "ar")}</p>
-          <p className="text-foreground">الإجمالي: {formatPrice(order.total, "ar")}</p>
+          <p>
+            {t("admin.orders.subtotal")} {formatPrice(order.subtotal, locale)}
+          </p>
+          <p>
+            {t("admin.orders.discount")} {formatPrice(order.discount, locale)}
+          </p>
+          <p>
+            {t("admin.orders.shippingFee")} {formatPrice(order.shipping_fee, locale)}
+          </p>
+          <p className="text-foreground">
+            {t("admin.orders.grandTotal")} {formatPrice(order.total, locale)}
+          </p>
         </div>
       </div>
 
       <div className="space-y-3">
         <div className="space-y-1.5">
-          <Label className="text-xs">حالة الدفع</Label>
+          <Label className="text-xs">{t("admin.orders.paymentStatus")}</Label>
           <Select value={paymentStatus} onValueChange={(v) => setPaymentStatus(v as PaymentStatus)}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {PAYMENT.map((p) => (
-                <SelectItem key={p.value} value={p.value}>
-                  {p.label}
+                <SelectItem key={p} value={p}>
+                  {t(`pay.${p}`)}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs">رقم التتبع</Label>
+          <Label className="text-xs">{t("admin.orders.tracking")}</Label>
           <Input dir="ltr" value={tracking} onChange={(e) => setTracking(e.target.value)} />
         </div>
         <div className="space-y-1.5">
-          <Label className="text-xs">ملاحظات الإدارة</Label>
+          <Label className="text-xs">{t("admin.orders.adminNotes")}</Label>
           <Textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} />
         </div>
         <Button
@@ -329,7 +340,7 @@ function OrderDetails({
           disabled={saving}
           onClick={() => onSave({ paymentStatus, trackingNumber: tracking, adminNotes: notes })}
         >
-          حفظ التغييرات
+          {t("admin.orders.saveChanges")}
         </Button>
       </div>
     </div>

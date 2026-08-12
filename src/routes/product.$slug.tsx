@@ -2,7 +2,22 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery, queryOptions } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Heart, Minus, Plus, MessageCircle, ShieldCheck, Truck } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Heart,
+  MessageCircle,
+  Minus,
+  MoveVertical,
+  Plus,
+  Ruler,
+  Scissors,
+  ShieldCheck,
+  ShoppingBag,
+  Star,
+  Truck,
+  WashingMachine,
+} from "lucide-react";
 import { getCatalog, getProduct } from "@/lib/catalog.functions";
 import { useI18n } from "@/lib/i18n";
 import { useCart } from "@/lib/cart";
@@ -99,7 +114,7 @@ export const Route = createFileRoute("/product/$slug")({
 
 function ProductPage() {
   const { slug } = Route.useParams();
-  const { t, pick, locale } = useI18n();
+  const { t, pick, locale, dir } = useI18n();
   const { add, isWished, toggleWish } = useCart();
   const { data } = useSuspenseQuery(productQuery(slug));
 
@@ -178,15 +193,23 @@ function ProductPage() {
 
   return (
     <div className="container-salam py-12 md:py-16">
-      <nav className="flex items-center gap-2 text-xs text-muted-foreground">
+      <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Link to="/" className="hover:text-primary">
           {t("nav.home")}
         </Link>
-        <span>/</span>
+        {dir === "rtl" ? (
+          <ChevronLeft className="h-3.5 w-3.5" />
+        ) : (
+          <ChevronRight className="h-3.5 w-3.5" />
+        )}
         <Link to="/shop" className="hover:text-primary">
           {t("nav.shop")}
         </Link>
-        <span>/</span>
+        {dir === "rtl" ? (
+          <ChevronLeft className="h-3.5 w-3.5" />
+        ) : (
+          <ChevronRight className="h-3.5 w-3.5" />
+        )}
         <span className="text-foreground">{name}</span>
       </nav>
 
@@ -227,7 +250,7 @@ function ProductPage() {
               />
             )}
             {discount > 0 && (
-              <span className="absolute right-3 top-3 rounded-sm bg-primary px-2 py-0.5 text-[11px] font-medium text-primary-foreground">
+              <span className="absolute end-3 top-3 rounded-sm bg-primary px-2 py-0.5 text-[11px] font-medium text-primary-foreground">
                 {discount}% {t("badge.sale")}
               </span>
             )}
@@ -344,8 +367,9 @@ function ProductPage() {
             <button
               type="button"
               onClick={addToBag}
-              className="flex-1 rounded-sm bg-primary px-6 py-3 text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
+              className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm bg-primary px-6 py-3 text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
             >
+              <ShoppingBag className="h-4 w-4" />
               {t("product.addToBag")}
             </button>
             <button
@@ -395,35 +419,47 @@ function ProductPage() {
               {pick(product.description_ar, product.description_en)}
             </p>
           )}
-          <div className="mt-6 grid gap-4 text-sm sm:grid-cols-3">
+          <div className="mt-6 grid gap-4 text-sm sm:grid-cols-2 lg:grid-cols-4">
             {product.fabric_ar && (
-              <div>
-                <div className="font-medium">{t("product.fabric")}</div>
-                <div className="mt-1 text-muted-foreground">
+              <div className="rounded-sm border border-border bg-surface p-4">
+                <div className="flex items-center gap-2 font-medium">
+                  <Scissors className="h-4 w-4 text-primary" />
+                  {t("product.fabric")}
+                </div>
+                <div className="mt-1.5 text-muted-foreground">
                   {pick(product.fabric_ar, product.fabric_en)}
                 </div>
               </div>
             )}
             {product.fit_ar && (
-              <div>
-                <div className="font-medium">{t("product.fit")}</div>
-                <div className="mt-1 text-muted-foreground">
+              <div className="rounded-sm border border-border bg-surface p-4">
+                <div className="flex items-center gap-2 font-medium">
+                  <Ruler className="h-4 w-4 text-primary" />
+                  {t("product.fit")}
+                </div>
+                <div className="mt-1.5 text-muted-foreground">
                   {pick(product.fit_ar, product.fit_en)}
                 </div>
               </div>
             )}
             {product.length_ar && (
-              <div>
-                <div className="font-medium">{t("product.length")}</div>
-                <div className="mt-1 text-muted-foreground">
+              <div className="rounded-sm border border-border bg-surface p-4">
+                <div className="flex items-center gap-2 font-medium">
+                  <MoveVertical className="h-4 w-4 text-primary" />
+                  {t("product.length")}
+                </div>
+                <div className="mt-1.5 text-muted-foreground">
                   {pick(product.length_ar, product.length_en)}
                 </div>
               </div>
             )}
             {product.care_ar && (
-              <div>
-                <div className="font-medium">{t("product.care")}</div>
-                <div className="mt-1 text-muted-foreground">
+              <div className="rounded-sm border border-border bg-surface p-4">
+                <div className="flex items-center gap-2 font-medium">
+                  <WashingMachine className="h-4 w-4 text-primary" />
+                  {t("product.care")}
+                </div>
+                <div className="mt-1.5 text-muted-foreground">
                   {pick(product.care_ar, product.care_en)}
                 </div>
               </div>
@@ -444,7 +480,16 @@ function ProductPage() {
               <div key={r.id} className="rounded-sm border border-border p-5">
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">{r.author_name}</span>
-                  <span className="text-sm text-warning">{"★".repeat(r.rating)}</span>
+                  <span className="flex gap-0.5" aria-label={`${r.rating}/5`}>
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star
+                        key={i}
+                        className={`h-3.5 w-3.5 ${
+                          i < r.rating ? "fill-warning text-warning" : "text-border"
+                        }`}
+                      />
+                    ))}
+                  </span>
                 </div>
                 {r.comment && (
                   <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{r.comment}</p>

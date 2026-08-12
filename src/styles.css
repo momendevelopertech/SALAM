@@ -11,8 +11,8 @@
  */
 
 @theme inline {
-  --font-sans: "Cairo", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Cormorant Garamond", "Cairo", serif;
+  --font-sans: "Jost", "Almarai", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Playfair Display", "Amiri", "Almarai", serif;
 
   --radius-sm: calc(var(--radius) - 2px);
   --radius-md: var(--radius);
@@ -173,6 +173,33 @@
   }
 }
 
+/*
+ * Arabic / RTL typography.
+ * Arabic script must never be letter-spaced — it visually breaks the
+ * connected letters. These unlayered overrides win over utility classes
+ * whenever the document direction is rtl.
+ */
+
+html[dir="rtl"] h1,
+html[dir="rtl"] h2,
+html[dir="rtl"] h3,
+html[dir="rtl"] h4 {
+  letter-spacing: 0;
+}
+
+html[dir="rtl"] [class*="tracking-"] {
+  letter-spacing: 0;
+}
+
+html[dir="rtl"] .eyebrow {
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.logo-track {
+  letter-spacing: 0.32em;
+}
+
 @utility container-salam {
   width: 100%;
   margin-inline: auto;
@@ -195,12 +222,7 @@
 
 @utility hairline {
   height: 1px;
-  background: linear-gradient(
-    to inline-end,
-    transparent,
-    var(--color-border),
-    transparent
-  );
+  background: linear-gradient(to inline-end, transparent, var(--color-border), transparent);
 }
 
 @utility gold-rule {

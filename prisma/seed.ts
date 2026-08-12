@@ -183,7 +183,8 @@ const PRODUCTS: Record<string, SeedProduct[]> = {
       name_ar: "فستان مريم",
       name_en: "Mariam Dress",
       description_ar: "فستان محتشم بقصّة مميزة وقماش يسمح بالتهوية، أناقة بلا مجهود.",
-      description_en: "A modest dress with a distinctive cut and breathable fabric for effortless style.",
+      description_en:
+        "A modest dress with a distinctive cut and breathable fabric for effortless style.",
       price: 1750,
       sale_price: 1490,
       image: IMG.dresses.mariam,
@@ -264,6 +265,42 @@ const COLORS = [
   { ar: "أسود", en: "Black", hex: "#1c1c1c" },
   { ar: "كحلي", en: "Navy", hex: "#1f2a44" },
   { ar: "رمادي", en: "Grey", hex: "#8a8a8a" },
+];
+
+const REELS = [
+  "https://www.facebook.com/reel/1566552774815870",
+  "https://www.facebook.com/reel/1536982634875864",
+  "https://www.facebook.com/reel/1657339745351500",
+  "https://www.facebook.com/reel/1757685301901777",
+  "https://www.facebook.com/reel/2482127515572111",
+  "https://www.facebook.com/reel/1426396779248397",
+  "https://www.facebook.com/reel/1326293326372445",
+  "https://www.facebook.com/reel/1695901064893067",
+  "https://www.facebook.com/reel/27113612254957846",
+  "https://www.facebook.com/reel/1897032214313869",
+  "https://www.facebook.com/reel/1926101641324862",
+  "https://www.facebook.com/reel/946772588290192",
+  "https://www.facebook.com/reel/1627172655257930",
+  "https://www.facebook.com/reel/1467153241791195",
+  "https://www.facebook.com/reel/1452804696636291",
+  "https://www.facebook.com/reel/25709471665390623",
+  "https://www.facebook.com/reel/1430665941801326",
+  "https://www.facebook.com/reel/4243178759298991",
+  "https://www.facebook.com/reel/1337310881417412",
+  "https://www.facebook.com/reel/1294395555861632",
+  "https://www.facebook.com/reel/1783408702257708",
+  "https://www.facebook.com/reel/1231865735167671",
+  "https://www.facebook.com/reel/1385322200274989",
+  "https://www.facebook.com/reel/2364896050665648",
+  "https://www.facebook.com/reel/1637444647432331",
+  "https://www.facebook.com/reel/868985086137376",
+  "https://www.facebook.com/reel/1197036752509320",
+  "https://www.facebook.com/reel/901365946016067",
+  "https://www.facebook.com/reel/4280355585571186",
+  "https://www.facebook.com/reel/1298290425458231",
+  "https://www.facebook.com/reel/2665647503817552",
+  "https://www.facebook.com/reel/1435615411313170",
+  "https://www.facebook.com/reel/1213437230434705",
 ];
 
 async function main() {
@@ -485,6 +522,23 @@ async function main() {
     },
   });
   console.log("✓ Coupons: WELCOME10, SALAM50");
+
+  let reelsCreated = 0;
+  for (const [index, url] of REELS.entries()) {
+    await prisma.reels.upsert({
+      where: { url },
+      update: {},
+      create: {
+        url,
+        title_ar: null,
+        title_en: null,
+        sort_order: index,
+        is_active: true,
+      },
+    });
+    reelsCreated++;
+  }
+  console.log(`✓ Reels: ${reelsCreated} seeded`);
 
   const sanity = await verifyPassword(ADMIN_PASSWORD, hashPassword(ADMIN_PASSWORD));
   if (!sanity) throw new Error("Password hash self-check failed");

@@ -7,6 +7,7 @@ import { getCatalog } from "@/lib/catalog.functions";
 import { useCart } from "@/lib/cart";
 import { useI18n } from "@/lib/i18n";
 import { formatPrice } from "@/lib/format";
+import { DirArrow } from "@/components/dir-arrow";
 
 const catalogQuery = queryOptions({ queryKey: ["catalog"], queryFn: () => getCatalog() });
 
@@ -54,13 +55,15 @@ function Wishlist() {
     return (
       <div className="container-salam py-24 text-center">
         <div className="gold-rule mx-auto" />
+        <Heart className="mx-auto mt-6 h-10 w-10 text-primary" />
         <h1 className="mt-6 font-display text-4xl">{t("wishlist.title")}</h1>
         <p className="mt-3 text-sm text-muted-foreground">{t("wishlist.emptyBody")}</p>
         <Link
           to="/shop"
-          className="mt-7 inline-flex rounded-sm bg-primary px-7 py-3 text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
+          className="mt-7 inline-flex items-center gap-2 rounded-sm bg-primary px-7 py-3 text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
         >
           {t("cart.continue")}
+          <DirArrow className="h-4 w-4" />
         </Link>
       </div>
     );

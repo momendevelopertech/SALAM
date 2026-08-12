@@ -1,5 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Feather, Gem, ShieldCheck } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import { DirArrow } from "@/components/dir-arrow";
 
 export const Route = createFileRoute("/about")({
   head: () => ({
@@ -17,14 +19,17 @@ const VALUES = [
   {
     key: "about.value1Title" as const,
     bodyKey: "about.value1Body" as const,
+    icon: Feather,
   },
   {
     key: "about.value2Title" as const,
     bodyKey: "about.value2Body" as const,
+    icon: Gem,
   },
   {
     key: "about.value3Title" as const,
     bodyKey: "about.value3Body" as const,
+    icon: ShieldCheck,
   },
 ];
 
@@ -58,7 +63,9 @@ function About() {
         <div className="mt-12 grid gap-8 md:grid-cols-3">
           {VALUES.map((v) => (
             <div key={v.key} className="text-center">
-              <div className="gold-rule mx-auto" />
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary-soft">
+                <v.icon className="h-6 w-6 text-primary" />
+              </div>
               <h3 className="mt-5 font-display text-2xl">{t(v.key)}</h3>
               <p className="mt-3 leading-relaxed text-muted-foreground">{t(v.bodyKey)}</p>
             </div>
@@ -84,9 +91,10 @@ function About() {
             <p className="mt-5 leading-relaxed text-muted-foreground">{t("home.storyBody")}</p>
             <Link
               to="/shop"
-              className="mt-7 inline-flex rounded-sm bg-primary px-7 py-3 text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
+              className="mt-7 inline-flex items-center gap-2 rounded-sm bg-primary px-7 py-3 text-sm tracking-wide text-primary-foreground transition-colors hover:bg-primary/90"
             >
               {t("home.heroCta")}
+              <DirArrow className="h-4 w-4" />
             </Link>
           </div>
         </div>

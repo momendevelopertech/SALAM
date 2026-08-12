@@ -16,6 +16,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as ReelsRouteImport } from './routes/reels'
 import { Route as ShippingRouteImport } from './routes/shipping'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as SizeGuideRouteImport } from './routes/size-guide'
@@ -28,6 +29,7 @@ import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedAdminCatalogRouteImport } from './routes/_authenticated/admin.catalog'
 import { Route as AuthenticatedAdminOrdersRouteImport } from './routes/_authenticated/admin.orders'
 import { Route as AuthenticatedAdminProductsRouteImport } from './routes/_authenticated/admin.products'
+import { Route as AuthenticatedAdminReelsRouteImport } from './routes/_authenticated/admin.reels'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -61,6 +63,11 @@ const CheckoutRoute = CheckoutRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReelsRoute = ReelsRouteImport.update({
+  id: '/reels',
+  path: '/reels',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShippingRoute = ShippingRouteImport.update({
@@ -126,6 +133,11 @@ const AuthenticatedAdminProductsRoute =
     path: '/products',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminReelsRoute = AuthenticatedAdminReelsRouteImport.update({
+  id: '/reels',
+  path: '/reels',
+  getParentRoute: () => AuthenticatedAdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -134,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
+  '/reels': typeof ReelsRoute
   '/shipping': typeof ShippingRoute
   '/shop': typeof ShopRoute
   '/size-guide': typeof SizeGuideRoute
@@ -145,6 +158,7 @@ export interface FileRoutesByFullPath {
   '/admin/catalog': typeof AuthenticatedAdminCatalogRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/admin/products': typeof AuthenticatedAdminProductsRoute
+  '/admin/reels': typeof AuthenticatedAdminReelsRoute
   '/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesByTo {
@@ -154,6 +168,7 @@ export interface FileRoutesByTo {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
+  '/reels': typeof ReelsRoute
   '/shipping': typeof ShippingRoute
   '/shop': typeof ShopRoute
   '/size-guide': typeof SizeGuideRoute
@@ -164,6 +179,7 @@ export interface FileRoutesByTo {
   '/admin/catalog': typeof AuthenticatedAdminCatalogRoute
   '/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/admin/products': typeof AuthenticatedAdminProductsRoute
+  '/admin/reels': typeof AuthenticatedAdminReelsRoute
   '/admin': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRoutesById {
@@ -175,6 +191,7 @@ export interface FileRoutesById {
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
   '/contact': typeof ContactRoute
+  '/reels': typeof ReelsRoute
   '/shipping': typeof ShippingRoute
   '/shop': typeof ShopRoute
   '/size-guide': typeof SizeGuideRoute
@@ -186,6 +203,7 @@ export interface FileRoutesById {
   '/_authenticated/admin/catalog': typeof AuthenticatedAdminCatalogRoute
   '/_authenticated/admin/orders': typeof AuthenticatedAdminOrdersRoute
   '/_authenticated/admin/products': typeof AuthenticatedAdminProductsRoute
+  '/_authenticated/admin/reels': typeof AuthenticatedAdminReelsRoute
   '/_authenticated/admin/': typeof AuthenticatedAdminIndexRoute
 }
 export interface FileRouteTypes {
@@ -197,6 +215,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/contact'
+    | '/reels'
     | '/shipping'
     | '/shop'
     | '/size-guide'
@@ -208,6 +227,7 @@ export interface FileRouteTypes {
     | '/admin/catalog'
     | '/admin/orders'
     | '/admin/products'
+    | '/admin/reels'
     | '/admin/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -217,6 +237,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/contact'
+    | '/reels'
     | '/shipping'
     | '/shop'
     | '/size-guide'
@@ -227,6 +248,7 @@ export interface FileRouteTypes {
     | '/admin/catalog'
     | '/admin/orders'
     | '/admin/products'
+    | '/admin/reels'
     | '/admin'
   id:
     | '__root__'
@@ -237,6 +259,7 @@ export interface FileRouteTypes {
     | '/cart'
     | '/checkout'
     | '/contact'
+    | '/reels'
     | '/shipping'
     | '/shop'
     | '/size-guide'
@@ -248,6 +271,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin/catalog'
     | '/_authenticated/admin/orders'
     | '/_authenticated/admin/products'
+    | '/_authenticated/admin/reels'
     | '/_authenticated/admin/'
   fileRoutesById: FileRoutesById
 }
@@ -259,6 +283,7 @@ export interface RootRouteChildren {
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
   ContactRoute: typeof ContactRoute
+  ReelsRoute: typeof ReelsRoute
   ShippingRoute: typeof ShippingRoute
   ShopRoute: typeof ShopRoute
   SizeGuideRoute: typeof SizeGuideRoute
@@ -317,6 +342,13 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reels': {
+      id: '/reels'
+      path: '/reels'
+      fullPath: '/reels'
+      preLoaderRoute: typeof ReelsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/shipping': {
@@ -403,6 +435,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminProductsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/reels': {
+      id: '/_authenticated/admin/reels'
+      path: '/reels'
+      fullPath: '/admin/reels'
+      preLoaderRoute: typeof AuthenticatedAdminReelsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
   }
 }
 
@@ -410,6 +449,7 @@ interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminCatalogRoute: typeof AuthenticatedAdminCatalogRoute
   AuthenticatedAdminOrdersRoute: typeof AuthenticatedAdminOrdersRoute
   AuthenticatedAdminProductsRoute: typeof AuthenticatedAdminProductsRoute
+  AuthenticatedAdminReelsRoute: typeof AuthenticatedAdminReelsRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
 }
 
@@ -417,6 +457,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminCatalogRoute: AuthenticatedAdminCatalogRoute,
   AuthenticatedAdminOrdersRoute: AuthenticatedAdminOrdersRoute,
   AuthenticatedAdminProductsRoute: AuthenticatedAdminProductsRoute,
+  AuthenticatedAdminReelsRoute: AuthenticatedAdminReelsRoute,
   AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,
 }
 
@@ -442,6 +483,7 @@ const rootRouteChildren: RootRouteChildren = {
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
   ContactRoute: ContactRoute,
+  ReelsRoute: ReelsRoute,
   ShippingRoute: ShippingRoute,
   ShopRoute: ShopRoute,
   SizeGuideRoute: SizeGuideRoute,
