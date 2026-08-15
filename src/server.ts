@@ -18,6 +18,29 @@ async function getServerEntry(): Promise<ServerEntry> {
   return serverEntryPromise;
 }
 
+// Facebook's plugin iframes (plugins/video.php) register unload listeners. The
+// `unload` Permissions Policy defaults to `self`, so cross-origin iframes are
+// blocked and Chrome logs hundreds of "unload is not allowed in this document"
+// violations. Listing the origin here (plus allow="unload" on the iframe) opts
+// the embed back in.
+const PERMISSIONS_POLICY = `unload=(self "https://www.facebook.com")`;
+
+function withSecurityHeaders(response: Response): Response {
+  const existing = response.headers.get("permissions-policy");
+  response.headers.set(
+    "permissions-policy",
+    existing ? `${existing}, ${PERMISSIONS_POLICY}` : PERMISSIONS_POLICY,
+  );
+  return response;
+}
+
+function errorPageResponse(): Response {
+  return new Response(renderErrorPage(), {
+    status: 500,
+    headers: { "content-type": "text/html; charset=utf-8" },
+  });
+}
+
 // h3 swallows in-handler throws into a normal 500 Response with body
 // {"unhandled":true,"message":"HTTPError"} — try/catch alone never fires for those.
 async function normalizeCatastrophicSsrResponse(response: Response): Promise<Response> {
@@ -49,13 +72,10 @@ export default {
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      return withSecurityHeaders(await normalizeCatastrophicSsrResponse(response));
     } catch (error) {
       console.error(error);
-      return new Response(renderErrorPage(), {
-        status: 500,
-        headers: { "content-type": "text/html; charset=utf-8" },
-      });
+      return withSecurityHeaders(errorPageResponse());
     }
   },
 };

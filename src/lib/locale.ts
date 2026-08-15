@@ -11,7 +11,10 @@ const isLocale = (v: string | null | undefined): v is Locale => v === "ar" || v 
  * Resolves the initial locale per environment:
  * - Server (SSR): reads the `salam_locale` cookie so the very first HTML render
  *   is already in the right language and direction (no Arabic→English flicker).
- * - Client: reads `localStorage` so hydration matches what SSR produced.
+ * - Client: reads the *same* cookie so hydration always matches what SSR
+ *   produced. `localStorage` is never used for the initial value because it can
+ *   diverge from the cookie (e.g. cookies cleared but storage kept) and would
+ *   cause a hydration mismatch.
  */
 export const resolveInitialLocale = createIsomorphicFn()
   .server(async () => {
@@ -20,7 +23,11 @@ export const resolveInitialLocale = createIsomorphicFn()
     return isLocale(value) ? value : "ar";
   })
   .client(() => {
-    const value = window.localStorage.getItem(LOCALE_STORAGE_KEY);
+    const value = document.cookie
+      .split(";")
+      .map((part) => part.trim())
+      .find((part) => part.startsWith(`${LOCALE_COOKIE_KEY}=`))
+      ?.slice(LOCALE_COOKIE_KEY.length + 1);
     return isLocale(value) ? value : "ar";
   });
 

@@ -12,7 +12,7 @@ export function ReelEmbed({ url, title }: { url: string; title?: string }) {
         frameBorder="0"
         allowFullScreen
         loading="lazy"
-        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+        allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share; unload"
       />
     </div>
   );
