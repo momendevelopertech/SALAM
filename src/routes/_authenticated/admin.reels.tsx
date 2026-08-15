@@ -3,9 +3,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Clapperboard, ExternalLink } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { deleteReel, getAdminReels, saveReel, setReelActive } from "@/lib/admin.functions";
+import { ReelEmbed } from "@/components/reel-embed";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -166,8 +167,13 @@ function AdminReels() {
               {rows.map((row) => (
                 <TableRow key={row.id}>
                   <TableCell>
-                    <div className="flex h-20 w-12 items-center justify-center overflow-hidden rounded-sm border border-border bg-surface-muted">
-                      <Clapperboard className="h-6 w-6 text-muted-foreground/50" />
+                    <div className="w-16">
+                      <ReelEmbed
+                        url={row.url}
+                        {...((row.title_ar ?? row.title_en)
+                          ? { title: row.title_ar ?? row.title_en! }
+                          : {})}
+                      />
                     </div>
                   </TableCell>
                   <TableCell>

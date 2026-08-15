@@ -200,6 +200,91 @@ html[dir="rtl"] .eyebrow {
   letter-spacing: 0.32em;
 }
 
+/* 80mm thermal receipt — hidden on screen, becomes the only printed page. */
+.print-receipt {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: 80mm auto;
+    margin: 0;
+  }
+
+  body > *:not(.print-receipt) {
+    display: none !important;
+  }
+
+  .print-receipt {
+    display: block;
+    width: 80mm;
+    padding: 6mm 4mm;
+    color: #000;
+    background: #fff;
+    font-family: ui-monospace, "Cascadia Mono", "Consolas", monospace;
+    font-size: 11px;
+    line-height: 1.5;
+  }
+
+  .print-receipt .receipt-brand {
+    text-align: center;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.3em;
+  }
+
+  .print-receipt .receipt-title {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 2mm 0 4mm;
+  }
+
+  .print-receipt .receipt-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 4mm;
+  }
+
+  .print-receipt .receipt-divider {
+    border-top: 1px dashed #000;
+    margin: 3mm 0;
+  }
+
+  .print-receipt .receipt-item {
+    margin-bottom: 2mm;
+  }
+
+  .print-receipt .receipt-item-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 4mm;
+  }
+
+  .print-receipt .receipt-item-name {
+    font-weight: 600;
+  }
+
+  .print-receipt .receipt-item-meta {
+    padding-inline-start: 4mm;
+    color: #444;
+  }
+
+  .print-receipt .receipt-total {
+    font-weight: 700;
+    font-size: 13px;
+    border-top: 1px solid #000;
+    padding-top: 2mm;
+    margin-top: 2mm;
+  }
+
+  .print-receipt .receipt-footer {
+    text-align: center;
+    margin-top: 4mm;
+    color: #444;
+  }
+}
+
 @utility container-salam {
   width: 100%;
   margin-inline: auto;

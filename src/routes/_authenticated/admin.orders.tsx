@@ -3,9 +3,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Fragment, useState } from "react";
 import { toast } from "sonner";
+import { Printer } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { getAdminOrders, updateOrder } from "@/lib/admin.functions";
 import { formatDate, formatPrice } from "@/lib/format";
+import { OrderReceipt } from "@/components/order-receipt";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -263,7 +265,13 @@ function OrderDetails({
   return (
     <div className="grid gap-6 py-4 lg:grid-cols-3">
       <div className="space-y-1 text-sm">
-        <p className="font-medium">{t("admin.orders.shipping")}</p>
+        <div className="mb-2 flex items-center justify-between">
+          <p className="font-medium">{t("admin.orders.shipping")}</p>
+          <Button variant="outline" size="sm" onClick={() => window.print()} className="gap-1.5">
+            <Printer className="h-3.5 w-3.5" />
+            {t("admin.orders.print")}
+          </Button>
+        </div>
         <p className="text-muted-foreground">
           {order.governorate} — {order.city}
         </p>
@@ -343,6 +351,8 @@ function OrderDetails({
           {t("admin.orders.saveChanges")}
         </Button>
       </div>
+
+      <OrderReceipt order={order} />
     </div>
   );
 }
