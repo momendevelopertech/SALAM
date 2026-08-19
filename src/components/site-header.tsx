@@ -18,10 +18,9 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur">
-      <div className="container-salam flex h-16 items-center justify-between gap-6">
-        <Link to="/" className="flex items-baseline gap-2">
-          <span className="logo-track font-display text-2xl leading-none text-primary">SALAM</span>
-          <span className="text-xs text-muted-foreground">سلام</span>
+      <div className="container-salam flex h-14 items-center justify-between gap-3 sm:h-16 sm:gap-6">
+        <Link to="/" className="flex shrink-0 items-center">
+          <img src="/logo.jpg" alt="SALAM" className="h-7 w-auto sm:h-9" />
         </Link>
 
         <nav className="hidden items-center gap-7 md:flex">
@@ -37,12 +36,12 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-1.5 sm:gap-4">
           <button
             onClick={toggleLocale}
-            className="inline-flex items-center gap-1.5 rounded-sm border border-border px-2.5 py-1 text-xs tracking-wide text-muted-foreground transition-colors hover:border-primary hover:text-primary"
+            className="inline-flex items-center gap-1 rounded-sm border border-border px-2 py-1 text-[11px] tracking-wide text-muted-foreground transition-colors hover:border-primary hover:text-primary sm:px-2.5 sm:text-xs"
           >
-            <Languages className="h-3.5 w-3.5" />
+            <Languages className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
             {locale === "ar" ? "EN" : "ع"}
           </button>
           <Link
@@ -54,12 +53,11 @@ export function SiteHeader() {
           </Link>
           <Link
             to="/cart"
-            className="flex items-center gap-1.5 text-sm text-foreground/80 transition-colors hover:text-primary"
+            className="relative flex items-center text-foreground/80 transition-colors hover:text-primary"
           >
-            <ShoppingBag className="h-4 w-4" />
-            <span className="hidden sm:inline">{t("nav.cart")}</span>
+            <ShoppingBag className="h-4 w-4 sm:h-[18px] sm:w-[18px]" />
             {count > 0 && (
-              <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] text-primary-foreground">
+              <span className="absolute -right-1.5 -top-1.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] text-primary-foreground">
                 {count}
               </span>
             )}
@@ -73,13 +71,13 @@ export function SiteHeader() {
           </Link>
         </div>
       </div>
-      <nav className="container-salam flex items-center gap-5 overflow-x-auto pb-2 md:hidden">
+      <nav className="container-salam flex items-center gap-4 overflow-x-auto border-t border-border/40 py-2 md:hidden">
         {links.map((l) => (
           <Link
             key={l.to}
             to={l.to}
-            className="whitespace-nowrap text-xs text-muted-foreground"
-            activeProps={{ className: "text-primary" }}
+            className="whitespace-nowrap rounded-sm px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:text-primary"
+            activeProps={{ className: "bg-primary-soft text-primary" }}
           >
             {l.label}
           </Link>

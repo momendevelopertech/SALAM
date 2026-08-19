@@ -9,7 +9,7 @@ export function SiteFooter() {
     <footer className="mt-24 border-t border-border bg-surface-muted">
       <div className="container-salam grid gap-10 py-14 md:grid-cols-4">
         <div>
-          <div className="logo-track font-display text-2xl text-primary">SALAM</div>
+          <img src="/logo.jpg" alt="SALAM" className="h-10 w-auto" />
           <p className="mt-3 max-w-xs text-sm leading-relaxed text-muted-foreground">
             {t("brand.tagline")}
           </p>
