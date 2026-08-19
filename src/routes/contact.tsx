@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Facebook, Instagram, Mail, MessageCircle, Phone } from "lucide-react";
+import { Facebook, Globe, Instagram, Mail, MessageCircle, Phone } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { whatsappLink } from "@/lib/format";
 
@@ -46,6 +46,7 @@ function Contact() {
           <h2 className="mt-4 font-display text-xl">{t("contact.email")}</h2>
           <a
             href="mailto:Salam.modest.wear@gmail.com"
+            dir="ltr"
             className="mt-2 block text-sm text-foreground hover:text-primary"
           >
             Salam.modest.wear@gmail.com
@@ -57,7 +58,8 @@ function Contact() {
           <h2 className="mt-4 font-display text-xl">{t("contact.phone")}</h2>
           <a
             href="tel:+201093132565"
-            className="mt-2 block text-sm text-foreground hover:text-primary"
+            dir="ltr"
+            className="mt-2 inline-block text-sm text-foreground hover:text-primary"
           >
             +20 10 93132565
           </a>
@@ -65,7 +67,7 @@ function Contact() {
       </div>
 
       <div className="mt-6 rounded-sm border border-border bg-surface p-6">
-        <Instagram className="h-6 w-6 text-primary" />
+        <Globe className="h-6 w-6 text-primary" />
         <h2 className="mt-4 font-display text-xl">{t("contact.social")}</h2>
         <div className="mt-3 flex flex-wrap gap-3 text-sm">
           <a
